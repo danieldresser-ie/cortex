@@ -193,7 +193,7 @@ void driverOpen( AtNode *node, struct AtOutputIterator *iterator, AtBBox2 displa
 	// window.
 	parameters->writable()["pixelAspect"] = new FloatData(
 		// Arnold is y/x, we're x/y
-		1.0f / AiNodeGetFlt( AiUniverseGetOptions(), "aspect_ratio" )
+		1.0f / AiNodeGetFlt( AiUniverseGetOptions(), "pixel_aspect_ratio" )
 	);
 
 	const std::string driverType = AiNodeGetStr( node, "driverType" ).c_str();
