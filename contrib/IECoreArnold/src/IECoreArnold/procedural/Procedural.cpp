@@ -99,7 +99,16 @@ static void initialisePython()
 	PyEval_ReleaseThread( PyThreadState_Get() );
 }
 
-static int procInit( AtNode *node, void **userPtr )
+AI_PROCEDURAL_NODE_EXPORT_METHODS(IECoreProcedural);
+
+node_parameters
+{
+	AiParameterStr( "className", "" );
+	AiParameterInt( "classVersion", 1 );
+	AiParameterArray( "parameterValues", AiArray(0, 1, AI_TYPE_STRING) );
+}
+
+procedural_init
 {
 	// load the class
 
@@ -124,7 +133,7 @@ static int procInit( AtNode *node, void **userPtr )
 			{
 				// hack to workaround ass parsing errors
 				/// \todo Remove when we get the Arnold version that fixes this
-				std::string s = AiArrayGetStr( parameterValues, i );
+				std::string s = AiArrayGetStr( parameterValues, i ).c_str();
 				for( size_t c = 0; c<s.size(); c++ )
 				{
 					if( s[c] == '@' )
@@ -163,19 +172,19 @@ static int procInit( AtNode *node, void **userPtr )
 		parameterisedProcedural->render( renderer.get() );
 
 		renderer->addRef();
-		*userPtr = renderer.get();
+		*user_ptr = renderer.get();
 	}
 	else
 	{
-		*userPtr = 0;
+		*user_ptr = 0;
 	}
 
 	return 1;
 }
 
-static int procCleanup( void *userPtr )
+procedural_cleanup
 {
-	IECoreArnold::Renderer *renderer = (IECoreArnold::Renderer *)( userPtr );
+	IECoreArnold::Renderer *renderer = (IECoreArnold::Renderer *)( user_ptr );
 	if( renderer )
 	{
 		renderer->removeRef();
@@ -183,27 +192,29 @@ static int procCleanup( void *userPtr )
 	return 1;
 }
 
-static int procNumNodes( void *userPtr )
+procedural_num_nodes
 {
-	IECoreArnold::Renderer *renderer = (IECoreArnold::Renderer *)( userPtr );
+	IECoreArnold::Renderer *renderer = (IECoreArnold::Renderer *)( user_ptr );
 	return renderer ? renderer->numProceduralNodes() : 0;
 }
 
-static AtNode* procGetNode( void *userPtr, int i )
+procedural_get_node
 {
-	IECoreArnold::Renderer *renderer = (IECoreArnold::Renderer *)( userPtr );
+	IECoreArnold::Renderer *renderer = (IECoreArnold::Renderer *)( user_ptr );
 	return renderer ? (AtNode *)renderer->proceduralNode( i ) : 0;
 }
 
 
-AI_EXPORT_LIB int ProcLoader( AtProcVtable *vTable )
+node_loader
 {
+	if (i>0)
+		return false;
 
-	vTable->Init = procInit;
-	vTable->Cleanup = procCleanup;
-	vTable->NumNodes = procNumNodes;
-	vTable->GetNode = procGetNode;
-	strcpy( vTable->version, AI_VERSION );
+	node->methods      = IECoreProcedural;
+	node->output_type  = AI_TYPE_NONE;
+	node->name         = "ieProcedural";
+	node->node_type    = AI_NODE_SHAPE_PROCEDURAL;
+	strcpy(node->version, AI_VERSION);
 
-	return 1;
+	return true;
 }
