@@ -106,9 +106,6 @@ class PointsTest( unittest.TestCase ) :
 		image = IECore.ImageDisplayDriver.removeStoredImage( "testHandle" )
 		del image["A"]
 
-		# raise blackPoint massively to remove possible watermark
-		IECore.Grade()( input = image, copyInput = False, blackPoint = IECore.Color3f( 0.9 ) )
-
 		expectedImage = IECore.Reader.create( os.path.dirname( __file__ ) + "/data/pointsImages/points.tif" ).read()
 
 		IECore.ImageWriter.create( image, "/tmp/test.tif" ).write()
@@ -134,7 +131,7 @@ class PointsTest( unittest.TestCase ) :
 
 			n = IECoreArnold.NodeAlgo.convert( p )
 			a = arnold.AiNodeGetArray( n, "myPrimVar" )
-			self.assertEqual( a.contents.nelements, 10 )
+			self.assertEqual( arnold.AiArrayGetNumElements( a.contents ), 10 )
 			for i in range( 0, 10 ) :
 				self.assertEqual( arnold.AiArrayGetInt( a, i ), i )
 
@@ -161,7 +158,7 @@ class PointsTest( unittest.TestCase ) :
 
 				n = IECoreArnold.NodeAlgo.convert( p )
 				a = arnold.AiNodeGetArray( n, "myPrimVar" )
-				self.assertEqual( a.contents.nelements, 10 )
+				self.assertEqual( arnold.AiArrayGetNumElements( a.contents ), 10 )
 				for i in range( 0, 10 ) :
 					self.assertEqual( arnold.AiArrayGetInt( a, i ), i )
 
@@ -193,28 +190,25 @@ class PointsTest( unittest.TestCase ) :
 
 		with IECoreArnold.UniverseBlock( writable = True ) :
 
-			n = IECoreArnold.NodeAlgo.convert( [ p1, p2 ], [ -0.25, 0.25 ] )
+			n = IECoreArnold.NodeAlgo.convert( [ p1, p2 ], -0.25, 0.25 )
 
 			a = arnold.AiNodeGetArray( n, "points" )
-			self.assertEqual( a.contents.nelements, 10 )
-			self.assertEqual( a.contents.nkeys, 2 )
+			self.assertEqual( arnold.AiArrayGetNumElements( a.contents ), 10 )
+			self.assertEqual( arnold.AiArrayGetNumKeys( a.contents ), 2 )
 
 			r = arnold.AiNodeGetArray( n, "radius" )
-			self.assertEqual( a.contents.nelements, 10 )
-			self.assertEqual( a.contents.nkeys, 2 )
+			self.assertEqual( arnold.AiArrayGetNumElements( a.contents ), 10 )
+			self.assertEqual( arnold.AiArrayGetNumKeys( a.contents ), 2 )
 
 			for i in range( 0, 10 ) :
-				self.assertEqual( arnold.AiArrayGetPnt( a, i ), arnold.AtPoint( 10 ) )
+				self.assertEqual( arnold.AiArrayGetVec( a, i ), arnold.AtVector( 10 ) )
 				self.assertEqual( arnold.AiArrayGetFlt( r, i ), 0.5 )
 			for i in range( 11, 20 ) :
-				self.assertEqual( arnold.AiArrayGetPnt( a, i ), arnold.AtPoint( 20 ) )
+				self.assertEqual( arnold.AiArrayGetVec( a, i ), arnold.AtVector( 20 ) )
 				self.assertEqual( arnold.AiArrayGetFlt( r, i ), 1 )
 
-			a = arnold.AiNodeGetArray( n, "deform_time_samples" )
-			self.assertEqual( a.contents.nelements, 2 )
-			self.assertEqual( a.contents.nkeys, 1 )
-			self.assertEqual( arnold.AiArrayGetFlt( a, 0 ), -0.25 )
-			self.assertEqual( arnold.AiArrayGetFlt( a, 1 ), 0.25 )
+			self.assertEqual( arnold.AiNodeGetFlt( n, "motion_start" ), -0.25 )
+			self.assertEqual( arnold.AiNodeGetFlt( n, "motion_end" ), 0.25 )
 
 if __name__ == "__main__":
     unittest.main()

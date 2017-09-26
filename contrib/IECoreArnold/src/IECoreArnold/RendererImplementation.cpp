@@ -81,10 +81,12 @@ RendererImplementation::AttributeState::AttributeState()
 	attributes = new CompoundData;
 	attributes->writable()["ai:visibility:camera"] = new BoolData( true );
 	attributes->writable()["ai:visibility:shadow"] = new BoolData( true );
-	attributes->writable()["ai:visibility:reflected"] = new BoolData( true );
-	attributes->writable()["ai:visibility:refracted"] = new BoolData( true );
-	attributes->writable()["ai:visibility:diffuse"] = new BoolData( true );
-	attributes->writable()["ai:visibility:glossy"] = new BoolData( true );
+	attributes->writable()["ai:visibility:diffuseReflect"] = new BoolData( true );
+	attributes->writable()["ai:visibility:specularReflect"] = new BoolData( true );
+	attributes->writable()["ai:visibility:diffuseTransmit"] = new BoolData( true );
+	attributes->writable()["ai:visibility:specularTransmit"] = new BoolData( true );
+	attributes->writable()["ai:visibility:volume"] = new BoolData( true );
+	attributes->writable()["ai:visibility:subsurface"] = new BoolData( true );
 }
 
 RendererImplementation::AttributeState::AttributeState( const AttributeState &other )
@@ -102,20 +104,20 @@ RendererImplementation::AttributeState::AttributeState( const AttributeState &ot
 extern AtNodeMethods *ieDisplayDriverMethods;
 
 IECoreArnold::RendererImplementation::RendererImplementation()
-	:	m_defaultFilter( 0 )
+	:	m_defaultFilter( 0 ), m_motionBlockSize( 0 )
 {
 	constructCommon( Render );
 }
 
 IECoreArnold::RendererImplementation::RendererImplementation( const std::string &assFileName )
-	:	m_defaultFilter( 0 )
+	:	m_defaultFilter( 0 ), m_motionBlockSize( 0 )
 {
 	m_assFileName = assFileName;
 	constructCommon( AssGen );
 }
 
 IECoreArnold::RendererImplementation::RendererImplementation( const RendererImplementation &other )
-	:	m_transformStack( other.m_transformStack, /* flatten = */ true )
+	:	m_transformStack( other.m_transformStack, /* flatten = */ true ), m_motionBlockSize( 0 )
 {
 	constructCommon( Procedural );
 	m_instancingConverter = other.m_instancingConverter;
@@ -123,6 +125,7 @@ IECoreArnold::RendererImplementation::RendererImplementation( const RendererImpl
 }
 
 IECoreArnold::RendererImplementation::RendererImplementation( const AtNode *proceduralNode )
+	:	m_motionBlockSize( 0 )
 {
 	constructCommon( Procedural );
 	m_instancingConverter = new InstancingConverter;
@@ -142,9 +145,6 @@ void IECoreArnold::RendererImplementation::constructCommon( Mode mode )
 		m_universe = boost::shared_ptr<UniverseBlock>( new UniverseBlock( /* writable = */ true ) );
 		m_instancingConverter = new InstancingConverter;
 
-		/// \todo Control with an option
-		AiMsgSetConsoleFlags( AI_LOG_ALL );
-
 		// create a generic filter we can use for all displays
 		m_defaultFilter = AiNode( "gaussian_filter" );
 		AiNodeSetStr( m_defaultFilter, "name", "ieCoreArnold:defaultFilter" );
@@ -155,10 +155,6 @@ void IECoreArnold::RendererImplementation::constructCommon( Mode mode )
 
 IECoreArnold::RendererImplementation::~RendererImplementation()
 {
-	if( m_mode != Procedural )
-	{
-		AiEnd();
-	}
 }
 
 ////////////////////////////////////////////////////////////////////////
@@ -235,7 +231,7 @@ void IECoreArnold::RendererImplementation::camera( const std::string &name, cons
 	AiNodeSetInt( options, "yres", resolution->readable().y );
 
 	const FloatData *pixelAspectRatio = cortexCamera->parametersData()->member<FloatData>( "pixelAspectRatio" );
-	AiNodeSetFlt( options, "aspect_ratio", 1.0f / pixelAspectRatio->readable() ); // arnold is y/x, we're x/y
+	AiNodeSetFlt( options, "pixel_aspect_ratio", 1.0f / pixelAspectRatio->readable() ); // arnold is y/x, we're x/y
 }
 
 void IECoreArnold::RendererImplementation::display( const std::string &name, const std::string &type, const std::string &data, const IECore::CompoundDataMap &parameters )
@@ -355,9 +351,12 @@ void IECoreArnold::RendererImplementation::transformEnd()
 
 void IECoreArnold::RendererImplementation::setTransform( const Imath::M44f &m )
 {
-	if( m_motionTimes.size() && !m_transformStack.inMotion() )
+	if( m_motionBlockSize && !m_transformStack.inMotion() )
 	{
-		m_transformStack.motionBegin( m_motionTimes );
+		// We call motionBegin on the transform stack with a dummy time sample vector of the correct size
+		// Arnold doesn't support non-uniform time sampling, so we won't use the actual values, we just
+		// need the transform block to know how many values to expect.
+		m_transformStack.motionBegin( std::vector<float>( m_motionBlockSize, 0.0f ) );
 	}
 	m_transformStack.set( m );
 }
@@ -380,9 +379,10 @@ Imath::M44f IECoreArnold::RendererImplementation::getTransform( const std::strin
 
 void IECoreArnold::RendererImplementation::concatTransform( const Imath::M44f &m )
 {
-	if( m_motionTimes.size() && !m_transformStack.inMotion() )
+	if( m_motionBlockSize && !m_transformStack.inMotion() )
 	{
-		m_transformStack.motionBegin( m_motionTimes );
+		// See comment in setTransform
+		m_transformStack.motionBegin( std::vector<float>( m_motionBlockSize, 0.0f ) );
 	}
 	m_transformStack.concatenate( m );
 }
@@ -540,24 +540,32 @@ void IECoreArnold::RendererImplementation::illuminate( const std::string &lightH
 
 void IECoreArnold::RendererImplementation::motionBegin( const std::set<float> &times )
 {
-	if( !m_motionTimes.empty() )
+	if( m_motionBlockSize )
 	{
 		msg( Msg::Error, "IECoreArnold::RendererImplementation::motionBegin", "Already in a motion block." );
 		return;
 	}
 
-	m_motionTimes.insert( m_motionTimes.end(), times.begin(), times.end() );
+	// TODO - is it worth the time to do this, in order to avoid silently giving incorrect results?
+	std::vector<float> timesVector;
+	timesVector.insert( timesVector.end(), times.begin(), times.end() );
+	NodeAlgo::ensureUniformTimeSamples( timesVector );
+
+	m_motionStart = *times.begin();
+	m_motionEnd = *(--times.end());
+	m_motionBlockSize = times.size();
+
 }
 
 void IECoreArnold::RendererImplementation::motionEnd()
 {
-	if( m_motionTimes.empty() )
+	if( !m_motionBlockSize )
 	{
 		msg( Msg::Error, "IECoreArnold::RendererImplementation::motionEnd", "Not in a motion block." );
 		return;
 	}
 
-	m_motionTimes.clear();
+	m_motionBlockSize = 0;
 	m_motionPrimitives.clear();
 	if( m_transformStack.inMotion() )
 	{
@@ -630,14 +638,12 @@ void IECoreArnold::RendererImplementation::geometry( const std::string &type, co
 /////////////////////////////////////////////////////////////////////////////////////////
 // procedurals
 /////////////////////////////////////////////////////////////////////////////////////////
-
-int IECoreArnold::RendererImplementation::procLoader( AtProcVtable *vTable )
+int IECoreArnold::RendererImplementation::procFunc( AtProceduralNodeMethods *methods )
 {
-	vTable->Init = procInit;
-	vTable->Cleanup = procCleanup;
-	vTable->NumNodes = procNumNodes;
-	vTable->GetNode = procGetNode;
-	strcpy( vTable->version, AI_VERSION );
+	methods->Init = procInit;
+	methods->Cleanup = procCleanup;
+	methods->NumNodes = procNumNodes;
+	methods->GetNode = procGetNode;
 	return 1;
 }
 
@@ -650,20 +656,20 @@ int IECoreArnold::RendererImplementation::procInit( AtNode *node, void **userPtr
 	return 1;
 }
 
-int IECoreArnold::RendererImplementation::procCleanup( void *userPtr )
+int IECoreArnold::RendererImplementation::procCleanup( const AtNode *node, void *userPtr )
 {
 	ProceduralData *data = (ProceduralData *)( userPtr );
 	delete data;
 	return 1;
 }
 
-int IECoreArnold::RendererImplementation::procNumNodes( void *userPtr )
+int IECoreArnold::RendererImplementation::procNumNodes( const AtNode *node, void *userPtr )
 {
 	ProceduralData *data = (ProceduralData *)( userPtr );
 	return data->renderer->m_implementation->m_nodes.size();
 }
 
-AtNode* IECoreArnold::RendererImplementation::procGetNode( void *userPtr, int i )
+AtNode* IECoreArnold::RendererImplementation::procGetNode( const AtNode *node, void *userPtr, int i )
 {
 	ProceduralData *data = (ProceduralData *)( userPtr );
 	return data->renderer->m_implementation->m_nodes[i];
@@ -682,17 +688,12 @@ void IECoreArnold::RendererImplementation::procedural( IECore::Renderer::Procedu
 
 	if( const ExternalProcedural *externalProc = dynamic_cast<ExternalProcedural *>( proc.get() ) )
 	{
-		// Allow a parameter "ai:nodeType" == "volume" to create a volume shape rather
-		// than a procedural shape. Volume shapes provide "dso", "min" and "max" parameters
-		// just as procedural shapes do, so the mapping is a fairly natural one.
-		CompoundDataMap::const_iterator nodeTypeIt = externalProc->parameters().find( "ai:nodeType" );
-		if( nodeTypeIt != externalProc->parameters().end() && nodeTypeIt->second->isInstanceOf( StringData::staticTypeId() ) )
-		{
-			nodeType = static_cast<const StringData *>( nodeTypeIt->second.get() )->readable();
-		}
-		node = AiNode( nodeType.c_str() );
-
-		AiNodeSetStr( node, "dso", externalProc->fileName().c_str() );
+		// \todo In Arnold, external procedurals register node types, and then we use the node types
+		// just like built in nodes - we don't reference the filename of the dso that defines the node type.
+		// So here we just interpret "filename" as the node type to create.
+		// Where should this be documented.  Should we change the name of the parameter to ExternalProcedural
+		// to be something other than "filename" in Cortex 10?
+		node = AiNode( externalProc->fileName().c_str() );
 		ParameterAlgo::setParameters( node, externalProc->parameters() );
 		applyTransformToNode( node );
 	}
@@ -713,24 +714,13 @@ void IECoreArnold::RendererImplementation::procedural( IECore::Renderer::Procedu
 			bound = transformedBound;
 		}
 
-		AiNodeSetPtr( node, "funcptr", (void *)procLoader );
+		AiNodeSetPtr( node, "funcptr", (void *)procFunc );
 
 		ProceduralData *data = new ProceduralData;
 		data->procedural = proc;
 		data->renderer = new IECoreArnold::Renderer( new RendererImplementation( *this ) );
 
 		AiNodeSetPtr( node, "userptr", data );
-	}
-
-	if( bound != Procedural::noBound )
-	{
-		AiNodeSetPnt( node, "min", bound.min.x, bound.min.y, bound.min.z );
-		AiNodeSetPnt( node, "max", bound.max.x, bound.max.y, bound.max.z );
-	}
-	else
-	{
-		// No bound available - expand procedural immediately.
-		AiNodeSetBool( node, "load_at_init", true );
 	}
 
 	if( nodeType == "procedural" )
@@ -767,12 +757,12 @@ bool IECoreArnold::RendererImplementation::automaticInstancing() const
 
 void IECoreArnold::RendererImplementation::addPrimitive( const IECore::Primitive *primitive, const std::string &attributePrefix )
 {
-	if( !m_motionTimes.empty() )
+	if( m_motionBlockSize )
 	{
 		// We're in a motion block. Just store samples
 		// until we have all of them.
 		m_motionPrimitives.push_back( primitive );
-		if( m_motionPrimitives.size() != m_motionTimes.size() )
+		if( m_motionPrimitives.size() != m_motionBlockSize )
 		{
 			return;
 		}
@@ -795,14 +785,14 @@ void IECoreArnold::RendererImplementation::addPrimitive( const IECore::Primitive
 				it->second->hash( hash );
 			}
 		}
-		if( !m_motionTimes.empty() )
+		if( m_motionBlockSize )
 		{
 			vector<const Primitive *> prims;
 			for( vector<ConstPrimitivePtr>::const_iterator it = m_motionPrimitives.begin(), eIt = m_motionPrimitives.end(); it != eIt; ++it )
 			{
 				prims.push_back( it->get() );
 			}
-			shape = m_instancingConverter->convert( prims, m_motionTimes, hash );
+			shape = m_instancingConverter->convert( prims, m_motionStart, m_motionEnd, hash );
 		}
 		else
 		{
@@ -811,14 +801,14 @@ void IECoreArnold::RendererImplementation::addPrimitive( const IECore::Primitive
 	}
 	else
 	{
-		if( !m_motionTimes.empty() )
+		if( m_motionBlockSize )
 		{
 			vector<const Object *> prims;
 			for( vector<ConstPrimitivePtr>::const_iterator it = m_motionPrimitives.begin(), eIt = m_motionPrimitives.end(); it != eIt; ++it )
 			{
 				prims.push_back( it->get() );
 			}
-			shape = NodeAlgo::convert( prims, m_motionTimes );
+			shape = NodeAlgo::convert( prims, m_motionStart, m_motionEnd );
 		}
 		else
 		{
@@ -874,32 +864,26 @@ void IECoreArnold::RendererImplementation::applyTransformToNode( AtNode *node )
 	const size_t numSamples = m_transformStack.numSamples();
 	if( numSamples == 1 )
 	{
-		AiNodeSetMatrix( node, "matrix", m_transformStack.get().x );
+		M44f m = m_transformStack.get();
+		AiNodeSetMatrix( node, "matrix", *reinterpret_cast<AtMatrix*>( (float(*)[4][4])&m.x ) );
 	}
 	else
 	{
-		AtArray *times = AiArrayAllocate( numSamples, 1, AI_TYPE_FLOAT );
 		AtArray *matrices = AiArrayAllocate( 1, numSamples, AI_TYPE_MATRIX );
 		for( size_t i = 0; i < numSamples; ++i )
 		{
-			AiArraySetFlt( times, i, m_transformStack.sampleTime( i ) );
-			AiArraySetMtx( matrices, i, m_transformStack.sample( i ).x );
+			M44f m = m_transformStack.sample( i );
+			AiArraySetMtx( matrices, i, *reinterpret_cast<AtMatrix*>( (float(*)[4][4])&m.x ) );
 		}
 		AiNodeSetArray( node, "matrix", matrices );
-		if( AiNodeEntryLookUpParameter( AiNodeGetNodeEntry( node ), "transform_time_samples" ) )
-		{
-			AiNodeSetArray( node, "transform_time_samples", times );
-		}
-		else
-		{
-			AiNodeSetArray( node, "time_samples", times );
-		}
+		AiNodeSetFlt( node, "motion_start", m_motionStart );
+		AiNodeSetFlt( node, "motion_end", m_motionEnd );
 	}
 }
 
 void IECoreArnold::RendererImplementation::applyVisibilityToNode( AtNode *node )
 {
-	AtByte visibility = 0;
+	uint8_t visibility = 0;
 	const BoolData *visData = m_attributeStack.top().attributes->member<BoolData>( "ai:visibility:camera" );
 	if( visData->readable() )
 	{
@@ -912,28 +896,40 @@ void IECoreArnold::RendererImplementation::applyVisibilityToNode( AtNode *node )
 		visibility |= AI_RAY_SHADOW;
 	}
 
-	visData = m_attributeStack.top().attributes->member<BoolData>( "ai:visibility:reflected" );
+	visData = m_attributeStack.top().attributes->member<BoolData>( "ai:visibility:diffuseReflect" );
 	if( visData->readable() )
 	{
-		visibility |= AI_RAY_REFLECTED;
+		visibility |= AI_RAY_DIFFUSE_REFLECT;
 	}
 
-	visData = m_attributeStack.top().attributes->member<BoolData>( "ai:visibility:refracted" );
+	visData = m_attributeStack.top().attributes->member<BoolData>( "ai:visibility:specularReflect" );
 	if( visData->readable() )
 	{
-		visibility |= AI_RAY_REFRACTED;
+		visibility |= AI_RAY_SPECULAR_REFLECT;
 	}
 
-	visData = m_attributeStack.top().attributes->member<BoolData>( "ai:visibility:diffuse" );
+	visData = m_attributeStack.top().attributes->member<BoolData>( "ai:visibility:diffuseTransmit" );
 	if( visData->readable() )
 	{
-		visibility |= AI_RAY_DIFFUSE;
+		visibility |= AI_RAY_DIFFUSE_TRANSMIT;
 	}
 
-	visData = m_attributeStack.top().attributes->member<BoolData>( "ai:visibility:glossy" );
+	visData = m_attributeStack.top().attributes->member<BoolData>( "ai:visibility:specularTransmit" );
 	if( visData->readable() )
 	{
-		visibility |= AI_RAY_GLOSSY;
+		visibility |= AI_RAY_SPECULAR_TRANSMIT;
+	}
+
+	visData = m_attributeStack.top().attributes->member<BoolData>( "ai:visibility:volume" );
+	if( visData->readable() )
+	{
+		visibility |= AI_RAY_VOLUME;
+	}
+
+	visData = m_attributeStack.top().attributes->member<BoolData>( "ai:visibility:subsurface" );
+	if( visData->readable() )
+	{
+		visibility |= AI_RAY_SUBSURFACE;
 	}
 
 	AiNodeSetByte( node, "visibility", visibility );
