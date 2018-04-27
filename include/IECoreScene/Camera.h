@@ -44,6 +44,15 @@ namespace IECoreScene
 class IECORESCENE_API Camera : public PreWorldRenderable
 {
 	public:
+		enum FilmFitMode
+		{
+			UseDefault = -1, // Only valid as default value for normalizedScreenWindow
+			Horizontal,
+			Vertical,
+			Fit,
+			Fill,
+			Distort,
+		};
 
 		Camera( IECore::CompoundDataPtr parameters = new IECore::CompoundData );
 		~Camera() override;
@@ -52,21 +61,129 @@ class IECORESCENE_API Camera : public PreWorldRenderable
 
 		IECore::CompoundDataMap &parameters();
 		const IECore::CompoundDataMap &parameters() const;
+
 		/// This is mostly of use for the binding - the parameters()
 		/// function gives more direct access to the contents of the CompoundData
 		/// (it calls readable() or writable() for you).
 		IECore::CompoundData *parametersData();
 		const IECore::CompoundData *parametersData() const;
-		/// Adds the standard parameters documented as part of Renderer::camera(),
-		/// giving them the appropriate default values as documented there. Note that
-		/// this function will only modify existing parameters if they are of the incorrect
-		/// datatype or have invalid values - in all other cases the values of missing
-		/// parameters will be computed based on the existing parameters.
-		void addStandardParameters();
+
+		/// Camera parameters
+		/// ------------------------------
+		///
+		/// These are the fundamental parameters of the camera.
+		/// They are stored in the parameters of key/value pairs, but you can always
+		/// just use these accessors.  get* behaves as if parameters that have not
+		/// been set yet had been stored with a default value.
+
+		std::string getProjection() const;
+		void setProjection( const std::string &projection );
+
+		Imath::V2f getAperture() const;
+		void setAperture( const Imath::V2f &aperture );
+
+		Imath::V2f getApertureOffset() const;
+		void setApertureOffset( const Imath::V2f &apertureOffset );
+
+		float getFocalLength() const;
+		void setFocalLength( const float &focalLength );
+
+		Imath::V2f getClippingPlanes() const;
+		void setClippingPlanes( const Imath::V2f &clippingPlanes );
+
+		float getFStop() const;
+		void setFStop( const float &fStop );
+
+		float getFocalLengthWorldScale() const;
+		void setFocalLengthWorldScale( const float &focalLengthWorldScale );
+
+		float getFocusDistance() const;
+		void setFocusDistance( const float &focusDistance );
+
+
+		/// Rendering parameters
+		/// ------------------------------
+		///
+		/// These specify additional optional overrides of rendering settings.
+		/// Usually these setting should be controlled from the render globals,
+		/// but we include the option of overriding them on the camera so that :
+		/// - A user can set up a projection camera, where it is important that
+		///   the aspect ratio not vary with the render globals
+		/// - A user can override overscan or crop on just one camera in a
+		///   multi-camera setup
+		/// - So that the `Renderer::camera()` method receives everything
+		///   related to a particular camera in a single call, simplifying IPR edits.
+		///   This means that settings from the render globals must be baked into
+		///   the camera before passing to Renderer.
+
+		bool hasFilmFitMode() const;
+		FilmFitMode getFilmFitMode() const;
+		void setFilmFitMode( const FilmFitMode &filmFitMode );
+		void removeFilmFitMode();
+
+		bool hasResolution() const;
+		Imath::V2i getResolution() const;
+		void setResolution( const Imath::V2i &resolution );
+		void removeResolution();
+
+		bool hasPixelAspectRatio() const;
+		float getPixelAspectRatio() const;
+		void setPixelAspectRatio( const float &pixelAspectRatio );
+		void removePixelAspectRatio();
+
+		bool hasResolutionMultiplier() const;
+		float getResolutionMultiplier() const;
+		void setResolutionMultiplier( const float &resolutionMultiplier );
+		void removeResolutionMultiplier();
+
+		bool hasOverscan() const;
+		bool getOverscan() const;
+		void setOverscan( const bool &overscan );
+		void removeOverscan();
+
+		bool hasOverscanLeft() const;
+		float getOverscanLeft() const;
+		void setOverscanLeft( const float &overscanLeft );
+		void removeOverscanLeft();
+
+		bool hasOverscanRight() const;
+		float getOverscanRight() const;
+		void setOverscanRight( const float &overscanRight );
+		void removeOverscanRight();
+
+		bool hasOverscanTop() const;
+		float getOverscanTop() const;
+		void setOverscanTop( const float &overscanTop );
+		void removeOverscanTop();
+
+		bool hasOverscanBottom() const;
+		float getOverscanBottom() const;
+		void setOverscanBottom( const float &overscanBottom );
+		void removeOverscanBottom();
+
+		bool hasCropWindow() const;
+		Imath::Box2f getCropWindow() const;
+		void setCropWindow( const Imath::Box2f &overscanBottom );
+		void removeCropWindow();
+
+		bool hasShutter() const;
+		Imath::V2f getShutter() const;
+		void setShutter( const Imath::V2f &shutter );
+		void removeShutter();
+
+
+		static Imath::Box2f fitWindow( const Imath::Box2f &window, Camera::FilmFitMode fitMode, float targetAspect );
+
+		Imath::Box2f normalizedScreenWindow( float aspectRatio = -1.0f, FilmFitMode fitMode = UseDefault ) const;
+
+		void renderImageSpec( Imath::V2i &resolution, bool &hasRegion, Imath::Box2i &renderRegion ) const;
 
 		void render( Renderer *renderer ) const override;
 
+
 	private:
+
+		Imath::Box2f defaultApertureRect() const;
 
 		IECore::CompoundDataPtr m_parameters;
 
