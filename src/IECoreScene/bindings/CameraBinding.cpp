@@ -168,6 +168,9 @@ void bindCamera()
 		.def( "fitWindow", &Camera::fitWindow ).staticmethod( "fitWindow" )
 		.def( "normalizedScreenWindow", &Camera::normalizedScreenWindow, normalizedScreenWindowOverloads() )
 		.def( "renderImageSpec", &renderImageSpec )
+
+		.def( "calculateFieldOfView", &Camera::calculateFieldOfView )
+		.def( "setFocalLengthFromFieldOfView", &Camera::setFocalLengthFromFieldOfView )
 	;
 }
 

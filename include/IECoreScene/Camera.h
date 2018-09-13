@@ -178,6 +178,9 @@ class IECORESCENE_API Camera : public PreWorldRenderable
 
 		void renderImageSpec( Imath::V2i &resolution, bool &hasRegion, Imath::Box2i &renderRegion ) const;
 
+		Imath::V2f calculateFieldOfView() const;
+		void setFocalLengthFromFieldOfView( float horizontalFOV );
+
 		void render( Renderer *renderer ) const override;
 
 

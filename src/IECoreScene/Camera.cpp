@@ -34,6 +34,8 @@
 
 #include "IECoreScene/Camera.h"
 
+#include "IECore/AngleConversion.h"
+
 #include "IECoreScene/Renderer.h"
 
 #include "IECore/MurmurHash.h"
@@ -438,7 +440,18 @@ void Camera::renderImageSpec( Imath::V2i &resolution, bool &hasRegion, Imath::Bo
 	}
 }
 
+Imath::V2f Camera::calculateFieldOfView() const
+{
+	return V2f(
+		2.0f * IECore::radiansToDegrees( atan( 0.5f * getAperture()[0] / getFocalLength() ) ),
+		2.0f * IECore::radiansToDegrees( atan( 0.5f * getAperture()[1] / getFocalLength() ) )
+	);
+}
 
+void Camera::setFocalLengthFromFieldOfView( float horizontalFOV )
+{
+	setFocalLength( getAperture()[0] * 0.5f / tan( 0.5f * IECore::degreesToRadians( horizontalFOV ) ) );
+}
 
 void Camera::render( Renderer *renderer ) const
 {
