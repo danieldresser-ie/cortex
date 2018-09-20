@@ -50,23 +50,26 @@ class CameraAlgoTest( unittest.TestCase ) :
 
 		with IECoreArnold.UniverseBlock( writable = True ) :
 
-			n = IECoreArnold.NodeAlgo.convert(
-				IECoreScene.Camera(
-					parameters = {
-						"projection" : "perspective",
-						"projection:fov" : 45.0,
-						"resolution" : imath.V2i( 512 ),
-						"screenWindow" : imath.Box2f( imath.V2f( -1, -0.5 ), imath.V2f( 1, 0.5 ) )
-					}
-				),
-				"testCamera"
+			c = IECoreScene.Camera(
+				parameters = {
+					"projection" : "perspective",
+					"focalLength" : 1 / ( 2.0 * math.tan( 0.5 * math.radians( 45 ) ) ),
+					"resolution" : imath.V2i( 512 ),
+					"aperture" : imath.V2f( 2, 1 )
+				}
 			)
 
-			self.assertTrue( arnold.AiNodeEntryGetName( arnold.AiNodeGetNodeEntry( n ) ), "persp_camera" )
-			self.assertEqual( arnold.AiNodeGetFlt( n, "fov" ), 45.0 )
+			n = IECoreArnold.NodeAlgo.convert( c, "testCamera" )
+			screenWindow = c.normalizedScreenWindow()
 
-			self.assertEqual( arnold.AiNodeGetVec2( n, "screen_window_min" ), arnold.AtVector2( -1, -0.5 ) )
-			self.assertEqual( arnold.AiNodeGetVec2( n, "screen_window_max" ), arnold.AtVector2( 1, 0.5 ) )
+			self.assertTrue( arnold.AiNodeEntryGetName( arnold.AiNodeGetNodeEntry( n ) ), "persp_camera" )
+
+			screenWindowMult = math.tan( 0.5 * math.radians( arnold.AiNodeGetFlt( n, "fov" ) ) )
+
+			self.assertAlmostEqual( screenWindowMult * arnold.AiNodeGetVec2( n, "screen_window_min" ).x, screenWindow.min()[0] )
+			self.assertAlmostEqual( screenWindowMult * arnold.AiNodeGetVec2( n, "screen_window_min" ).y, screenWindow.min()[1] )
+			self.assertAlmostEqual( screenWindowMult * arnold.AiNodeGetVec2( n, "screen_window_max" ).x, screenWindow.max()[0] )
+			self.assertAlmostEqual( screenWindowMult * arnold.AiNodeGetVec2( n, "screen_window_max" ).y, screenWindow.max()[1] )
 
 	def testConvertCustomProjection( self ) :
 
