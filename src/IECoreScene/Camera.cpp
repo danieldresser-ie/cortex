@@ -237,21 +237,21 @@ DECLARE_ACCESSORS( FocalLengthWorldScale, "focalLengthWorldScale", FloatData, 0.
 DECLARE_ACCESSORS( FocusDistance, "focusDistance", FloatData, 1.0f );
 
 // Film fit mode requires a specialized accessor, to convert to the enum
-bool Camera::hasFilmFitMode() const
+bool Camera::hasFilmFit() const
 {
-	return checkCompoundDataMap<IntData>( parameters(), "filmFitMode" );
+	return checkCompoundDataMap<IntData>( parameters(), "filmFit" );
 }
-void Camera::setFilmFitMode( const Camera::FilmFitMode &value )
+void Camera::setFilmFit( const Camera::FilmFit &value )
 {
-	parameters()["filmFitMode"] = new IntData( value );
+	parameters()["filmFit"] = new IntData( value );
 }
-Camera::FilmFitMode Camera::getFilmFitMode() const
+Camera::FilmFit Camera::getFilmFit() const
 {
-	return (FilmFitMode)accessCompoundDataMapWithDefault<IntData>( parameters(), "filmFitMode", Horizontal );
+	return (FilmFit)accessCompoundDataMapWithDefault<IntData>( parameters(), "filmFit", Horizontal );
 }
-void Camera::removeFilmFitMode()
+void Camera::removeFilmFit()
 {
-	parameters().erase("filmFitMode");
+	parameters().erase("filmFit");
 }
 
 DECLARE_ACCESSORS_FOR_OPTIONAL( Resolution, "resolution", V2iData, V2i( 640, 480 ) );
@@ -268,7 +268,7 @@ DECLARE_ACCESSORS_FOR_OPTIONAL( Shutter, "shutter", V2fData, V2f( -0.5f, 0.5f ) 
 namespace {
 
 //pxr/imaging/lib/cameraUtil/conformWindow.cpp : _ResolveConformWindowPolicy
-Camera::FilmFitMode resolveFitMode(const Imath::V2f &size, Camera::FilmFitMode fitMode, float targetAspect)
+Camera::FilmFit resolveFitMode(const Imath::V2f &size, Camera::FilmFit fitMode, float targetAspect)
 {
 	if( (fitMode == Camera::Horizontal) || (fitMode == Camera::Vertical ) )
 	{
@@ -294,14 +294,14 @@ Camera::FilmFitMode resolveFitMode(const Imath::V2f &size, Camera::FilmFitMode f
 }
 
 //pxr/imaging/lib/cameraUtil/conformWindow.cpp : CameraUtilConformedWindow
-Imath::Box2f Camera::fitWindow( const Imath::Box2f &window, Camera::FilmFitMode fitMode, float targetAspect)
+Imath::Box2f Camera::fitWindow( const Imath::Box2f &window, Camera::FilmFit fitMode, float targetAspect)
 {
 	if( fitMode == Camera::Distort )
 	{
 		return window; // Just return the original window, even if this produces non-square pixels
 	}
 
-	const Camera::FilmFitMode resolvedFitMode =
+	const Camera::FilmFit resolvedFitMode =
 		resolveFitMode( window.size(), fitMode, targetAspect);
 
 	if( resolvedFitMode == Camera::Horizontal )
@@ -325,7 +325,7 @@ Imath::Box2f Camera::fitWindow( const Imath::Box2f &window, Camera::FilmFitMode 
 	}
 }
 
-Imath::Box2f Camera::normalizedScreenWindow( float aspectRatio, FilmFitMode fitMode ) const
+Imath::Box2f Camera::normalizedScreenWindow( float aspectRatio, FilmFit fitMode ) const
 {
 	Imath::V2f corner( 0.5f * getAperture() );
 
@@ -362,7 +362,7 @@ Imath::Box2f Camera::normalizedScreenWindow( float aspectRatio, FilmFitMode fitM
 
 	if( fitMode == UseDefault )
 	{
-		fitMode = getFilmFitMode();
+		fitMode = getFilmFit();
 	}
 
 	if( aspectRatio == -1.0f )

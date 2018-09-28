@@ -63,7 +63,7 @@ void bindCamera()
 		// then define all the nested types
 		scope s( cameraClass );
 
-		enum_< Camera::FilmFitMode > ("FilmFitMode")
+		enum_< Camera::FilmFit > ("FilmFit")
 			.value("Horizontal", Camera::Horizontal)
 			.value("Vertical", Camera::Vertical)
 			.value("Fit", Camera::Fit)
@@ -99,10 +99,10 @@ void bindCamera()
 		.def( "setFocusDistance", &Camera::setFocusDistance )
 		.def( "getFocusDistance", &Camera::getFocusDistance )
 
-		.def( "hasFilmFitMode", &Camera::hasFilmFitMode )
-		.def( "setFilmFitMode", &Camera::setFilmFitMode )
-		.def( "getFilmFitMode", &Camera::getFilmFitMode )
-		.def( "removeFilmFitMode", &Camera::removeFilmFitMode )
+		.def( "hasFilmFit", &Camera::hasFilmFit )
+		.def( "setFilmFit", &Camera::setFilmFit )
+		.def( "getFilmFit", &Camera::getFilmFit )
+		.def( "removeFilmFit", &Camera::removeFilmFit )
 
 		.def( "hasResolution", &Camera::hasResolution )
 		.def( "setResolution", &Camera::setResolution )

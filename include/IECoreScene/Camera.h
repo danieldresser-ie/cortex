@@ -44,7 +44,7 @@ namespace IECoreScene
 class IECORESCENE_API Camera : public PreWorldRenderable
 {
 	public:
-		enum FilmFitMode
+		enum FilmFit
 		{
 			UseDefault = -1, // Only valid as default value for normalizedScreenWindow
 			Horizontal,
@@ -116,10 +116,10 @@ class IECORESCENE_API Camera : public PreWorldRenderable
 		///   This means that settings from the render globals must be baked into
 		///   the camera before passing to Renderer.
 
-		bool hasFilmFitMode() const;
-		FilmFitMode getFilmFitMode() const;
-		void setFilmFitMode( const FilmFitMode &filmFitMode );
-		void removeFilmFitMode();
+		bool hasFilmFit() const;
+		FilmFit getFilmFit() const;
+		void setFilmFit( const FilmFit &filmFit );
+		void removeFilmFit();
 
 		bool hasResolution() const;
 		Imath::V2i getResolution() const;
@@ -172,9 +172,9 @@ class IECORESCENE_API Camera : public PreWorldRenderable
 		void removeShutter();
 
 
-		static Imath::Box2f fitWindow( const Imath::Box2f &window, Camera::FilmFitMode fitMode, float targetAspect );
+		static Imath::Box2f fitWindow( const Imath::Box2f &window, Camera::FilmFit fitMode, float targetAspect );
 
-		Imath::Box2f normalizedScreenWindow( float aspectRatio = -1.0f, FilmFitMode fitMode = UseDefault ) const;
+		Imath::Box2f normalizedScreenWindow( float aspectRatio = -1.0f, FilmFit fitMode = UseDefault ) const;
 
 		Imath::V2i renderResolution() const;
 		Imath::Box2i renderRegion() const;

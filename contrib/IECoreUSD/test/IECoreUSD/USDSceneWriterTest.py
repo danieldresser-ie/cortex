@@ -711,10 +711,10 @@ class USDSceneWriterTest( unittest.TestCase ) :
 			self.assertEqual( cG.GetShutterCloseAttr().Get(), cortexCam.getShutter()[1] )
 
 			for usdFit, cortexFit in [
-					(pxr.CameraUtil.MatchHorizontally, IECoreScene.Camera.FilmFitMode.Horizontal),
-					(pxr.CameraUtil.MatchVertically, IECoreScene.Camera.FilmFitMode.Vertical),
-					(pxr.CameraUtil.Fit, IECoreScene.Camera.FilmFitMode.Fit),
-					(pxr.CameraUtil.Crop, IECoreScene.Camera.FilmFitMode.Fill)
+					(pxr.CameraUtil.MatchHorizontally, IECoreScene.Camera.FilmFit.Horizontal),
+					(pxr.CameraUtil.MatchVertically, IECoreScene.Camera.FilmFit.Vertical),
+					(pxr.CameraUtil.Fit, IECoreScene.Camera.FilmFit.Fit),
+					(pxr.CameraUtil.Crop, IECoreScene.Camera.FilmFit.Fill)
 				]:
 
 				for aspect in [ 0.3, 1, 2.5 ]:

@@ -152,7 +152,7 @@ class TestCamera( unittest.TestCase ) :
 	def testRenderOverrides( self ):
 		c = IECoreScene.Camera()
 
-		self.assertEqual( c.hasFilmFitMode(), False )
+		self.assertEqual( c.hasFilmFit(), False )
 		self.assertEqual( c.hasResolution(), False )
 		self.assertEqual( c.hasPixelAspectRatio(), False )
 		self.assertEqual( c.hasResolutionMultiplier(), False )
@@ -164,7 +164,7 @@ class TestCamera( unittest.TestCase ) :
 		self.assertEqual( c.hasCropWindow(), False )
 		self.assertEqual( c.hasShutter(), False )
 
-		c.setFilmFitMode( IECoreScene.Camera.FilmFitMode.Vertical )
+		c.setFilmFit( IECoreScene.Camera.FilmFit.Vertical )
 		c.setResolution( imath.V2i( 1280, 720 ) )
 		c.setPixelAspectRatio( 2 )
 		c.setResolutionMultiplier( 0.5 )
@@ -176,7 +176,7 @@ class TestCamera( unittest.TestCase ) :
 		c.setCropWindow( imath.Box2f( imath.V2f( 0.1, 0.2 ), imath.V2f( 0.8, 0.9 ) ) )
 		c.setShutter( imath.V2f( -0.7, 0.3 ) )
 
-		self.assertEqual( c.hasFilmFitMode(), True )
+		self.assertEqual( c.hasFilmFit(), True )
 		self.assertEqual( c.hasResolution(), True )
 		self.assertEqual( c.hasPixelAspectRatio(), True )
 		self.assertEqual( c.hasResolutionMultiplier(), True )
@@ -188,7 +188,7 @@ class TestCamera( unittest.TestCase ) :
 		self.assertEqual( c.hasCropWindow(), True )
 		self.assertEqual( c.hasShutter(), True )
 
-		self.assertEqual( c.getFilmFitMode(), IECoreScene.Camera.FilmFitMode.Vertical )
+		self.assertEqual( c.getFilmFit(), IECoreScene.Camera.FilmFit.Vertical )
 		self.assertEqual( c.getResolution(), imath.V2i( 1280, 720 ) )
 		self.assertEqual( c.getPixelAspectRatio(), 2 )
 		self.assertEqual( c.getResolutionMultiplier(), 0.5 )
@@ -200,7 +200,7 @@ class TestCamera( unittest.TestCase ) :
 		self.assertBox2fEqual( c.getCropWindow(), 0.1, 0.2, 0.8, 0.9 )
 		self.assertAlmostEqual( c.getShutter(), imath.V2f( -0.7, 0.3 ) )
 
-		c.removeFilmFitMode()
+		c.removeFilmFit()
 		c.removeResolution()
 		c.removePixelAspectRatio()
 		c.removeResolutionMultiplier()
@@ -212,7 +212,7 @@ class TestCamera( unittest.TestCase ) :
 		c.removeCropWindow()
 		c.removeShutter()
 
-		self.assertEqual( c.hasFilmFitMode(), False )
+		self.assertEqual( c.hasFilmFit(), False )
 		self.assertEqual( c.hasResolution(), False )
 		self.assertEqual( c.hasPixelAspectRatio(), False )
 		self.assertEqual( c.hasResolutionMultiplier(), False )
@@ -280,7 +280,7 @@ class TestCamera( unittest.TestCase ) :
 		def B( x1, y1, x2, y2 ):
 			return imath.Box2f( imath.V2f( x1, y1 ), imath.V2f( x2, y2 ) )
 
-		FitMode = IECoreScene.Camera.FilmFitMode
+		FitMode = IECoreScene.Camera.FilmFit
 		cc = IECoreScene.Camera
 		self.assertBox2fEqual( cc.fitWindow( B(-1, -1, 1, 1), FitMode.Horizontal, 1.0 ), -1, -1, 1, 1 )
 		self.assertBox2fEqual( cc.fitWindow( B(-1, -1, 1, 1), FitMode.Vertical,   1.0 ), -1, -1, 1, 1 )

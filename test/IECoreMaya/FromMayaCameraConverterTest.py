@@ -70,7 +70,7 @@ class FromMayaCameraConverterTest( IECoreMaya.TestCase ) :
 		fn.getFilmFrustum( 1, *utilPtrs )
 		mayaFrustum = [ maya.OpenMaya.MScriptUtil.getDouble( i ) for i in utilPtrs ]
 
-		cortexFrustum = coreCam.normalizedScreenWindow( 1, IECoreScene.Camera.FilmFitMode.Distort )
+		cortexFrustum = coreCam.normalizedScreenWindow( 1, IECoreScene.Camera.FilmFit.Distort )
 		self.assertAlmostEqual( mayaFrustum[0], cortexFrustum.size()[0], places = 6 )
 		self.assertAlmostEqual( mayaFrustum[1], cortexFrustum.size()[1], places = 6 )
 
@@ -134,7 +134,7 @@ class FromMayaCameraConverterTest( IECoreMaya.TestCase ) :
 
 		camera = IECoreMaya.FromMayaCameraConverter( "perspShape" ).convert()
 		self.assertFalse( camera.hasResolution() )
-		self.assertFalse( camera.hasFilmFitMode() )
+		self.assertFalse( camera.hasFilmFit() )
 		self.assertFalse( camera.hasPixelAspectRatio() )
 
 		maya.cmds.addAttr( "perspShape", ln="ieCamera_overrideResolution", at="long2" )
@@ -144,7 +144,7 @@ class FromMayaCameraConverterTest( IECoreMaya.TestCase ) :
 		self.assertTrue( camera.hasResolution() )
 		self.assertEqual( camera.getResolution(), imath.V2i( 1024, 778 ) )
 		self.assertFalse( camera.hasPixelAspectRatio() )
-		self.assertFalse( camera.hasFilmFitMode() )
+		self.assertFalse( camera.hasFilmFit() )
 
 		maya.cmds.deleteAttr( "perspShape", attribute= "ieCamera_overrideResolution" )
 		maya.cmds.addAttr( "perspShape", ln= "ieCamera_overridePixelAspectRatio", at="float", dv=2.0 )
@@ -152,25 +152,25 @@ class FromMayaCameraConverterTest( IECoreMaya.TestCase ) :
 		self.assertFalse( camera.hasResolution() )
 		self.assertTrue( camera.hasPixelAspectRatio() )
 		self.assertEqual( camera.getPixelAspectRatio(), 2.0 )
-		self.assertFalse( camera.hasFilmFitMode() )
+		self.assertFalse( camera.hasFilmFit() )
 		
 		maya.cmds.deleteAttr( "perspShape", attribute= "ieCamera_overridePixelAspectRatio" )
-		fitModeNames = IECoreScene.Camera.FilmFitMode.names.keys()
-		maya.cmds.addAttr( "perspShape", ln= "ieCamera_overrideFilmFitMode", at="enum", en=":".join( fitModeNames ) )
+		fitModeNames = IECoreScene.Camera.FilmFit.names.keys()
+		maya.cmds.addAttr( "perspShape", ln= "ieCamera_overrideFilmFit", at="enum", en=":".join( fitModeNames ) )
 
 
 		for i in range( len( fitModeNames ) ):
-			maya.cmds.setAttr( "perspShape.ieCamera_overrideFilmFitMode", i )
+			maya.cmds.setAttr( "perspShape.ieCamera_overrideFilmFit", i )
 			camera = IECoreMaya.FromMayaCameraConverter( "perspShape" ).convert()
 			self.assertFalse( camera.hasResolution() )
 			self.assertFalse( camera.hasPixelAspectRatio() )
-			self.assertTrue( camera.hasFilmFitMode() )
-			self.assertEqual( camera.getFilmFitMode(), IECoreScene.Camera.FilmFitMode.names[ fitModeNames[i] ] )
+			self.assertTrue( camera.hasFilmFit() )
+			self.assertEqual( camera.getFilmFit(), IECoreScene.Camera.FilmFit.names[ fitModeNames[i] ] )
 
-		maya.cmds.deleteAttr( "perspShape", attribute= "ieCamera_overrideFilmFitMode" )
+		maya.cmds.deleteAttr( "perspShape", attribute= "ieCamera_overrideFilmFit" )
 		camera = IECoreMaya.FromMayaCameraConverter( "perspShape" ).convert()
 		self.assertFalse( camera.hasResolution() )
-		self.assertFalse( camera.hasFilmFitMode() )
+		self.assertFalse( camera.hasFilmFit() )
 		self.assertFalse( camera.hasPixelAspectRatio() )
 
 	def testFilmOffset( self ) :

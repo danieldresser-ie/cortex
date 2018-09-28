@@ -106,37 +106,37 @@ IECore::ObjectPtr FromMayaCameraConverter::doConversion( const MDagPath &dagPath
 		}
 	}
 
-	if( fnCamera.hasAttribute( "ieCamera_overrideFilmFitMode" ) )
+	if( fnCamera.hasAttribute( "ieCamera_overrideFilmFit" ) )
 	{
 		MStatus success;
-		MPlug overrideFilmFitModePlug( fnCamera.object(), fnCamera.attribute( "ieCamera_overrideFilmFitMode" ) );
-		MFnEnumAttribute enumAttr( overrideFilmFitModePlug.attribute(), &success );
+		MPlug overrideFilmFitPlug( fnCamera.object(), fnCamera.attribute( "ieCamera_overrideFilmFit" ) );
+		MFnEnumAttribute enumAttr( overrideFilmFitPlug.attribute(), &success );
 		if( success == MS::kSuccess )
 		{
-			MString overrideFilmFitMode = enumAttr.fieldName(
-				overrideFilmFitModePlug.asInt( MDGContext::fsNormal, &success)
+			MString overrideFilmFit = enumAttr.fieldName(
+				overrideFilmFitPlug.asInt( MDGContext::fsNormal, &success)
 			);
 			if( success == MS::kSuccess )
 			{
-				if( overrideFilmFitMode == "Horizontal" )
+				if( overrideFilmFit == "Horizontal" )
 				{
-					result->setFilmFitMode( Camera::FilmFitMode::Horizontal );
+					result->setFilmFit( Camera::FilmFit::Horizontal );
 				}
-				else if( overrideFilmFitMode == "Vertical" )
+				else if( overrideFilmFit == "Vertical" )
 				{
-					result->setFilmFitMode( Camera::FilmFitMode::Vertical );
+					result->setFilmFit( Camera::FilmFit::Vertical );
 				}
-				else if( overrideFilmFitMode == "Fit" )
+				else if( overrideFilmFit == "Fit" )
 				{
-					result->setFilmFitMode( Camera::FilmFitMode::Fit );
+					result->setFilmFit( Camera::FilmFit::Fit );
 				}
-				else if( overrideFilmFitMode == "Fill" )
+				else if( overrideFilmFit == "Fill" )
 				{
-					result->setFilmFitMode( Camera::FilmFitMode::Fill );
+					result->setFilmFit( Camera::FilmFit::Fill );
 				}
-				else if( overrideFilmFitMode == "Distort" )
+				else if( overrideFilmFit == "Distort" )
 				{
-					result->setFilmFitMode( Camera::FilmFitMode::Distort );
+					result->setFilmFit( Camera::FilmFit::Distort );
 				}
 			}
 		}
