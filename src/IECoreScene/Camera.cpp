@@ -1,6 +1,6 @@
 //////////////////////////////////////////////////////////////////////////
 //
-//  Copyright (c) 2007-2013, Image Engine Design Inc. All rights reserved.
+//  Copyright (c) 2007-2018, Image Engine Design Inc. All rights reserved.
 //
 //  Redistribution and use in source and binary forms, with or without
 //  modification, are permitted provided that the following conditions are
@@ -48,9 +48,7 @@ using namespace std;
 
 namespace {
 
-	// TODO - it's a bit ridiculous that this helper function isn't just declared in CompoundDataBase,
-	// because we need to do this boilerplate all over the place, but Andrew is convinced that John won't let me
-	// do that for some reason, so I'm currently putting it here
+	// \todo: Remove once we have similar utilities on CompoundData
 	template <class T>
 	typename T::ValueType accessCompoundDataMapWithDefault( const CompoundDataMap &c, const InternedString &key, typename T::ValueType def )
 	{
@@ -189,7 +187,7 @@ Imath::Box2f Camera::defaultApertureRect() const
 	Imath::Box2f screenWindow = accessCompoundDataMapWithDefault<Box2fData>( parameters(), "screenWindow", Imath::Box2f() );
 	if( screenWindow.isEmpty() )
 	{
-		const Imath::V2i &resolution = accessCompoundDataMapWithDefault<V2iData>( parameters(), "resolution", V2i( 512, 512 ) );
+		const Imath::V2i &resolution = accessCompoundDataMapWithDefault<V2iData>( parameters(), "resolution", V2i( 512 ) );
 		float pixelAspectRatio = accessCompoundDataMapWithDefault<FloatData>( parameters(), "pixelAspectRatio", 1 );
 		float aspectRatio = ((float)resolution.x * pixelAspectRatio)/(float)resolution.y;
 		if( aspectRatio < 1.0f )
@@ -213,9 +211,6 @@ Imath::Box2f Camera::defaultApertureRect() const
 
 	return screenWindow;
 }
-
-// John has granted me an indulgence to use macros here to keep the accessor definitions more succinct,
-// so I guess I should take advantage of it.
 
 #define DECLARE_ACCESSORS( NAME, PROPERTY, DATATYPE, DEFAULT )\
 void Camera::set##NAME( const typename DATATYPE::ValueType &value ) { parameters()[PROPERTY] = new DATATYPE( value ); }\
@@ -244,7 +239,7 @@ DECLARE_ACCESSORS( FocusDistance, "focusDistance", FloatData, 1.0f );
 // Film fit mode requires a specialized accessor, to convert to the enum
 bool Camera::hasFilmFitMode() const
 {
-	return checkCompoundDataMap<BoolData>( parameters(), "filmFitMode" );
+	return checkCompoundDataMap<IntData>( parameters(), "filmFitMode" );
 }
 void Camera::setFilmFitMode( const Camera::FilmFitMode &value )
 {
@@ -372,38 +367,30 @@ Imath::Box2f Camera::normalizedScreenWindow( float aspectRatio, FilmFitMode fitM
 
 	if( aspectRatio == -1.0f )
 	{
-		Imath::V2i resolution;
-		bool hasRegion;
-		Imath::Box2i renderRegion;
-		renderImageSpec( resolution, hasRegion, renderRegion );
+		Imath::V2i resolution = renderResolution();
 		aspectRatio = float( std::max( 1, resolution.x ) ) / std::max( 1, resolution.y ) * getPixelAspectRatio();
 	}
 
 	return fitWindow( window, fitMode, aspectRatio );
 }
 
-void Camera::renderImageSpec( Imath::V2i &resolution, bool &hasRegion, Imath::Box2i &renderRegion ) const
+
+Imath::V2i Camera::renderResolution() const
 {
 	V2i origResolution = getResolution();
 	float resolutionMultiplier = getResolutionMultiplier();
-	resolution = V2i(
+	return V2i(
 		std::max( 1, int((float)origResolution.x * resolutionMultiplier) ),
 		std::max( 1, int((float)origResolution.y * resolutionMultiplier) )
 	);
+}
 
-	bool overscan = getOverscan();
-	bool crop = hasCropWindow();
+Imath::Box2i Camera::renderRegion() const
+{
+	V2i resolution = renderResolution();
+	Box2i renderRegion = Box2i( V2i( 0 ), resolution );
 
-	hasRegion = overscan || crop;
-	if( !hasRegion )
-	{
-		renderRegion = Box2i( V2i( 0 ), V2i( 0 ) );
-		return;
-	}
-
-	renderRegion = Box2i( V2i( 0 ), resolution - V2i( 1 ) );
-
-	if( overscan )
+	if( getOverscan() )
 	{
 		// convert offsets into pixel values and apply them to the render region
 		renderRegion.min -= V2i(
@@ -418,7 +405,7 @@ void Camera::renderImageSpec( Imath::V2i &resolution, bool &hasRegion, Imath::Bo
 	}
 
 
-	if( crop )
+	if( hasCropWindow() )
 	{
 		const Box2f &cropWindow = getCropWindow();
 		Box2i cropRegion(
@@ -427,8 +414,8 @@ void Camera::renderImageSpec( Imath::V2i &resolution, bool &hasRegion, Imath::Bo
 				(int)( round( resolution.y * cropWindow.min.y ) )
 			),
 			V2i(
-				(int)( round( resolution.x * cropWindow.max.x ) ) - 1,
-				(int)( round( resolution.y * cropWindow.max.y ) ) - 1
+				(int)( round( resolution.x * cropWindow.max.x ) ),
+				(int)( round( resolution.y * cropWindow.max.y ) )
 			)
 		);
 
@@ -436,8 +423,9 @@ void Camera::renderImageSpec( Imath::V2i &resolution, bool &hasRegion, Imath::Bo
 		renderRegion.max.x = std::min( renderRegion.max.x, cropRegion.max.x );
 		renderRegion.min.y = std::max( renderRegion.min.y, cropRegion.min.y );
 		renderRegion.max.y = std::min( renderRegion.max.y, cropRegion.max.y );
-
 	}
+
+	return renderRegion;
 }
 
 Imath::V2f Camera::calculateFieldOfView() const

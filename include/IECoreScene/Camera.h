@@ -176,7 +176,8 @@ class IECORESCENE_API Camera : public PreWorldRenderable
 
 		Imath::Box2f normalizedScreenWindow( float aspectRatio = -1.0f, FilmFitMode fitMode = UseDefault ) const;
 
-		void renderImageSpec( Imath::V2i &resolution, bool &hasRegion, Imath::Box2i &renderRegion ) const;
+		Imath::V2i renderResolution() const;
+		Imath::Box2i renderRegion() const;
 
 		Imath::V2f calculateFieldOfView() const;
 		void setFocalLengthFromFieldOfView( float horizontalFOV );

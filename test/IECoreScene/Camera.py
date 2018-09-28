@@ -34,10 +34,11 @@
 
 import unittest
 import os.path
-import imath
 
 import IECore
 import IECoreScene
+
+import imath
 
 class TestCamera( unittest.TestCase ) :
 
@@ -109,21 +110,23 @@ class TestCamera( unittest.TestCase ) :
 	def testDefaultApertureFromObseleteFovAndScreenWindow( self ) :
 
 		c = IECoreScene.Camera()
-		c.setResolution( imath.V2i( 100, 100 ) )
+		c.parameters()["resolution"] = imath.V2i( 100, 100 )
+		c.parameters()["projection"] = "perspective"
 
 		self.assertEqual( c.getAperture(), imath.V2f( 2, 2 ) )
 		self.assertEqual( c.getApertureOffset(), imath.V2f( 0, 0 ) )
 
-		c.parameters()["projection:fov"] = IECore.FloatData( 90 )
+		c.parameters()["projection:fov"] = 90.0
 
 		self.assertEqual( c.getAperture(), imath.V2f( 2, 2 ) )
 		self.assertEqual( c.getApertureOffset(), imath.V2f( 0, 0 ) )
 
-		c.parameters()["projection:fov"] = IECore.FloatData( 60 )
-		self.assertEqual( c.getAperture(), 1 / (3 ** 0.5) * imath.V2f( 2, 2 ) )
+		c.parameters()["projection:fov"] = 60.0
+		self.assertAlmostEqual( c.getAperture()[0], 1 / (3 ** 0.5) * 2, places = 6 )
+		self.assertAlmostEqual( c.getAperture()[1], 1 / (3 ** 0.5) * 2, places = 6 )
 		self.assertEqual( c.getApertureOffset(), imath.V2f( 0, 0 ) )
 
-		c.parameters()["projection:fov"] = IECore.FloatData( 90 )
+		c.parameters()["projection:fov"] = 90.0
 		c.setResolution( imath.V2i( 200, 100 ) )
 
 		self.assertEqual( c.getAperture(), imath.V2f( 4, 2 ) )
@@ -133,14 +136,14 @@ class TestCamera( unittest.TestCase ) :
 		self.assertEqual( c.getAperture(), imath.V2f( 8, 2 ) )
 		self.assertEqual( c.getApertureOffset(), imath.V2f( 0, 0 ) )
 
-		c.parameters()["projection:fov"] = IECore.FloatData( 90 )
+		c.parameters()["projection:fov"] = 90.0
 		c.setResolution( imath.V2i( 100, 100 ) )
 		c.setPixelAspectRatio( 1 )
-		c.parameters()["screenWindow"] = IECore.Box2fData( imath.Box2f( imath.V2f( 10, -3 ), imath.V2f( 11, 5 ) ) )
+		c.parameters()["screenWindow"] = imath.Box2f( imath.V2f( 10, -3 ), imath.V2f( 11, 5 ) )
 		self.assertEqual( c.getAperture(), imath.V2f( 1, 8 ) )
 		self.assertEqual( c.getApertureOffset(), imath.V2f( 10.5, 1 ) )
 
-		c.parameters()["screenWindow"] = IECore.Box2fData( imath.Box2f( imath.V2f( -1 ), imath.V2f( 1 ) ) )
+		c.parameters()["screenWindow"] = imath.Box2f( imath.V2f( -1 ), imath.V2f( 1 ) )
 		c.setFocalLength( 35 )
 
 		self.assertEqual( c.getAperture(), imath.V2f( 70, 70 ) )
@@ -250,21 +253,28 @@ class TestCamera( unittest.TestCase ) :
 			return imath.Box2i( imath.V2i( x1, y1 ), imath.V2i( x2, y2 ) )
 
 		c = IECoreScene.Camera()
-		self.assertEqual( c.renderImageSpec(), ( imath.V2i( 640, 480 ), False, B( 0, 0, 0, 0 ) ) )
+		self.assertEqual( c.renderResolution(), imath.V2i( 640, 480 ) )
+		self.assertEqual( c.renderRegion(), B( 0, 0, 640, 480 ) )
 		c.setResolution( imath.V2i( 1920, 1080 ) )
-		self.assertEqual( c.renderImageSpec(), ( imath.V2i( 1920, 1080 ), False, B( 0, 0, 0, 0 ) ) )
+		self.assertEqual( c.renderResolution(), imath.V2i( 1920, 1080 ) )
+		self.assertEqual( c.renderRegion(), B( 0, 0, 1920, 1080 ) )
 		c.setOverscanLeft( 0.1 )
-		self.assertEqual( c.renderImageSpec(), ( imath.V2i( 1920, 1080 ), False, B( 0, 0, 0, 0 ) ) )
+		self.assertEqual( c.renderResolution(), imath.V2i( 1920, 1080 ) )
+		self.assertEqual( c.renderRegion(), B( 0, 0, 1920, 1080 ) )
 		c.setOverscan( True )
-		self.assertEqual( c.renderImageSpec(), ( imath.V2i( 1920, 1080 ), True, B( -192, 0, 1919, 1079 ) ) )
+		self.assertEqual( c.renderResolution(), imath.V2i( 1920, 1080 ) )
+		self.assertEqual( c.renderRegion(), B( -192, 0, 1920, 1080 ) )
 		c.setOverscanRight( 1.0 )
 		c.setOverscanTop( 0.5 )
 		c.setOverscanBottom( 0.25 )
-		self.assertEqual( c.renderImageSpec(), ( imath.V2i( 1920, 1080 ), True, B( -192, -270, 3839, 1619 ) ) )
+		self.assertEqual( c.renderResolution(), imath.V2i( 1920, 1080 ) )
+		self.assertEqual( c.renderRegion(), B( -192, -270, 3840, 1620 ) )
 		c.setCropWindow( imath.Box2f( imath.V2f( 0, 0 ), imath.V2f( 1, 1 ) ) )
-		self.assertEqual( c.renderImageSpec(), ( imath.V2i( 1920, 1080 ), True, B( 0, 0, 1919, 1079 ) ) )
+		self.assertEqual( c.renderResolution(), imath.V2i( 1920, 1080 ) )
+		self.assertEqual( c.renderRegion(), B( 0, 0, 1920, 1080 ) )
 		c.setCropWindow( imath.Box2f( imath.V2f( 0.2, 0.3 ), imath.V2f( 0.8, 0.5 ) ) )
-		self.assertEqual( c.renderImageSpec(), ( imath.V2i( 1920, 1080 ), True, B( 384, 324, 1535, 539 ) ) )
+		self.assertEqual( c.renderResolution(), imath.V2i( 1920, 1080 ) )
+		self.assertEqual( c.renderRegion(), B( 384, 324, 1536, 540 ) )
 
 	def testFitWindow( self ):
 		def B( x1, y1, x2, y2 ):

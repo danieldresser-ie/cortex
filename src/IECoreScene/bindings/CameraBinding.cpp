@@ -50,17 +50,6 @@ using namespace IECoreScene;
 
 namespace {
 BOOST_PYTHON_MEMBER_FUNCTION_OVERLOADS( normalizedScreenWindowOverloads, normalizedScreenWindow, 0, 2 );
-
-static tuple renderImageSpec( const Camera &c )
-{
-	Imath::V2i resolution;
-	bool hasRegion;
-	Imath::Box2i renderRegion;
-	c.renderImageSpec( resolution, hasRegion, renderRegion );
-
-	return make_tuple( resolution, hasRegion, renderRegion );
-}
-
 }
 
 namespace IECoreSceneModule
@@ -167,7 +156,8 @@ void bindCamera()
 
 		.def( "fitWindow", &Camera::fitWindow ).staticmethod( "fitWindow" )
 		.def( "normalizedScreenWindow", &Camera::normalizedScreenWindow, normalizedScreenWindowOverloads() )
-		.def( "renderImageSpec", &renderImageSpec )
+		.def( "renderResolution", &Camera::renderResolution )
+		.def( "renderRegion", &Camera::renderRegion )
 
 		.def( "calculateFieldOfView", &Camera::calculateFieldOfView )
 		.def( "setFocalLengthFromFieldOfView", &Camera::setFocalLengthFromFieldOfView )
