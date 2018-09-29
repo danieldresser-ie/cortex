@@ -125,7 +125,7 @@ class ToMayaCameraConverterTest( IECoreMaya.TestCase ) :
 		fn.getFilmFrustum( 1, *utilPtrs )
 		mayaFrustum = [ maya.OpenMaya.MScriptUtil.getDouble( i ) for i in utilPtrs ]
 
-		cortexFrustum = coreCam.normalizedScreenWindow( 1, IECoreScene.Camera.FilmFit.Distort )
+		cortexFrustum = coreCam.normalizedScreenWindow( IECoreScene.Camera.FilmFit.Distort )
 		self.assertAlmostEqual( mayaFrustum[0], cortexFrustum.size()[0], places = 5 )
 		self.assertAlmostEqual( mayaFrustum[1], cortexFrustum.size()[1], places = 5 )
 

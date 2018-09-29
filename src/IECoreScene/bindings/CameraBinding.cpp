@@ -48,10 +48,6 @@ using namespace IECore;
 using namespace IECorePython;
 using namespace IECoreScene;
 
-namespace {
-BOOST_PYTHON_MEMBER_FUNCTION_OVERLOADS( normalizedScreenWindowOverloads, normalizedScreenWindow, 0, 2 );
-}
-
 namespace IECoreSceneModule
 {
 
@@ -155,7 +151,9 @@ void bindCamera()
 		.def( "removeShutter", &Camera::removeShutter )
 
 		.def( "fitWindow", &Camera::fitWindow ).staticmethod( "fitWindow" )
-		.def( "normalizedScreenWindow", &Camera::normalizedScreenWindow, normalizedScreenWindowOverloads() )
+		.def<Imath::Box2f (Camera::*)() const>( "normalizedScreenWindow", &Camera::normalizedScreenWindow )
+		.def<Imath::Box2f (Camera::*)(Camera::FilmFit) const>( "normalizedScreenWindow", &Camera::normalizedScreenWindow )
+		.def<Imath::Box2f (Camera::*)(Camera::FilmFit, float) const>( "normalizedScreenWindow", &Camera::normalizedScreenWindow )
 		.def( "renderResolution", &Camera::renderResolution )
 		.def( "renderRegion", &Camera::renderRegion )
 

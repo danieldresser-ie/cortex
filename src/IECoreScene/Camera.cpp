@@ -275,11 +275,6 @@ Camera::FilmFit resolveFitMode(const Imath::V2f &size, Camera::FilmFit fitMode, 
 		return fitMode;
 	}
 
-	if( fitMode == Camera::UseDefault )
-	{
-		return Camera::Horizontal;
-	}
-
 	const float aspect =
 		(size[1] != 0.0) ? size[0] / size[1] : 1.0;
 
@@ -325,7 +320,19 @@ Imath::Box2f Camera::fitWindow( const Imath::Box2f &window, Camera::FilmFit fitM
 	}
 }
 
-Imath::Box2f Camera::normalizedScreenWindow( float aspectRatio, FilmFit fitMode ) const
+Imath::Box2f Camera::normalizedScreenWindow() const
+{
+	return normalizedScreenWindow( getFilmFit() );
+}
+
+Imath::Box2f Camera::normalizedScreenWindow( FilmFit filmFit ) const
+{
+	Imath::V2i resolution = renderResolution();
+	float aspectRatio = float( std::max( 1, resolution.x ) ) / std::max( 1, resolution.y ) * getPixelAspectRatio();
+	return normalizedScreenWindow( filmFit, aspectRatio );
+}
+
+Imath::Box2f Camera::normalizedScreenWindow( FilmFit filmFit, float aspectRatio ) const
 {
 	Imath::V2f corner( 0.5f * getAperture() );
 
@@ -360,18 +367,7 @@ Imath::Box2f Camera::normalizedScreenWindow( float aspectRatio, FilmFit fitMode 
 		window.max /= getFocalLength();
 	}
 
-	if( fitMode == UseDefault )
-	{
-		fitMode = getFilmFit();
-	}
-
-	if( aspectRatio == -1.0f )
-	{
-		Imath::V2i resolution = renderResolution();
-		aspectRatio = float( std::max( 1, resolution.x ) ) / std::max( 1, resolution.y ) * getPixelAspectRatio();
-	}
-
-	return fitWindow( window, fitMode, aspectRatio );
+	return fitWindow( window, filmFit, aspectRatio );
 }
 
 

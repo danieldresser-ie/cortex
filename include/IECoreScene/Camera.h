@@ -46,7 +46,6 @@ class IECORESCENE_API Camera : public PreWorldRenderable
 	public:
 		enum FilmFit
 		{
-			UseDefault = -1, // Only valid as default value for normalizedScreenWindow
 			Horizontal,
 			Vertical,
 			Fit,
@@ -174,7 +173,9 @@ class IECORESCENE_API Camera : public PreWorldRenderable
 
 		static Imath::Box2f fitWindow( const Imath::Box2f &window, Camera::FilmFit fitMode, float targetAspect );
 
-		Imath::Box2f normalizedScreenWindow( float aspectRatio = -1.0f, FilmFit fitMode = UseDefault ) const;
+		Imath::Box2f normalizedScreenWindow() const;
+		Imath::Box2f normalizedScreenWindow( FilmFit fitMode ) const;
+		Imath::Box2f normalizedScreenWindow( FilmFit fitMode, float aspectRatio ) const;
 
 		Imath::V2i renderResolution() const;
 		Imath::Box2i renderRegion() const;
