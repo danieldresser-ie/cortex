@@ -173,9 +173,9 @@ class IECORESCENE_API Camera : public PreWorldRenderable
 
 		static Imath::Box2f fitWindow( const Imath::Box2f &window, Camera::FilmFit fitMode, float targetAspect );
 
-		Imath::Box2f normalizedScreenWindow() const;
-		Imath::Box2f normalizedScreenWindow( FilmFit fitMode ) const;
-		Imath::Box2f normalizedScreenWindow( FilmFit fitMode, float aspectRatio ) const;
+		Imath::Box2f frustum() const;
+		Imath::Box2f frustum( FilmFit fitMode ) const;
+		Imath::Box2f frustum( FilmFit fitMode, float aspectRatio ) const;
 
 		Imath::V2i renderResolution() const;
 		Imath::Box2i renderRegion() const;

@@ -60,7 +60,7 @@ class CameraAlgoTest( unittest.TestCase ) :
 			)
 
 			n = IECoreArnold.NodeAlgo.convert( c, "testCamera" )
-			screenWindow = c.normalizedScreenWindow()
+			screenWindow = c.frustum()
 
 			self.assertTrue( arnold.AiNodeEntryGetName( arnold.AiNodeGetNodeEntry( n ) ), "persp_camera" )
 

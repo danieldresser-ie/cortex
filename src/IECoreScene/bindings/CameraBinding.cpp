@@ -151,9 +151,9 @@ void bindCamera()
 		.def( "removeShutter", &Camera::removeShutter )
 
 		.def( "fitWindow", &Camera::fitWindow ).staticmethod( "fitWindow" )
-		.def<Imath::Box2f (Camera::*)() const>( "normalizedScreenWindow", &Camera::normalizedScreenWindow )
-		.def<Imath::Box2f (Camera::*)(Camera::FilmFit) const>( "normalizedScreenWindow", &Camera::normalizedScreenWindow )
-		.def<Imath::Box2f (Camera::*)(Camera::FilmFit, float) const>( "normalizedScreenWindow", &Camera::normalizedScreenWindow )
+		.def<Imath::Box2f (Camera::*)() const>( "frustum", &Camera::frustum )
+		.def<Imath::Box2f (Camera::*)(Camera::FilmFit) const>( "frustum", &Camera::frustum )
+		.def<Imath::Box2f (Camera::*)(Camera::FilmFit, float) const>( "frustum", &Camera::frustum )
 		.def( "renderResolution", &Camera::renderResolution )
 		.def( "renderRegion", &Camera::renderRegion )
 

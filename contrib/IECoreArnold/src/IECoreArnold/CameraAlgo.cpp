@@ -105,7 +105,7 @@ AtNode *CameraAlgo::convert( const IECoreScene::Camera *camera, const std::strin
 	AiNodeSetFlt( result, g_shutterStartArnoldString, shutter[0] );
 	AiNodeSetFlt( result, g_shutterEndArnoldString, shutter[1] );
 
-	const Imath::Box2f &normalizedScreenWindow = camera->normalizedScreenWindow();
+	const Imath::Box2f &frustum = camera->frustum();
 
 	// Arnold automatically adjusts the vertical screenWindow to compensate for the resolution and pixel aspect.
 	// This is handy when hand-editing .ass files, but since we already take care of this ourselves, we have
@@ -113,10 +113,10 @@ AtNode *CameraAlgo::convert( const IECoreScene::Camera *camera, const std::strin
 	const Imath::V2i &resolution = camera->getResolution();
 	float aspect = camera->getPixelAspectRatio() * (float)resolution.x / (float)resolution.y;
 
-	AiNodeSetVec2( result, g_screenWindowMinArnoldString, normalizedScreenWindow.min.x,
-		normalizedScreenWindow.min.y * aspect );
-	AiNodeSetVec2( result, g_screenWindowMaxArnoldString, normalizedScreenWindow.max.x,
-		normalizedScreenWindow.max.y * aspect );
+	AiNodeSetVec2( result, g_screenWindowMinArnoldString, frustum.min.x,
+		frustum.min.y * aspect );
+	AiNodeSetVec2( result, g_screenWindowMaxArnoldString, frustum.max.x,
+		frustum.max.y * aspect );
 
 	// Set any Arnold-specific parameters
 	const AtNodeEntry *nodeEntry = AiNodeGetNodeEntry( result );

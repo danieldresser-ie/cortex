@@ -52,7 +52,7 @@ void bindCamera()
 				arg( "transform" ) = Imath::M44f(),
 				arg( "orthographic" ) = true,
 				arg( "resolution" ) = Imath::V2i( 640, 480 ),
-				arg( "normalizedScreenWindow" ) = Imath::Box2f( Imath::V2f( -1 ), Imath::V2f( 1 ) ),
+				arg( "frustum" ) = Imath::Box2f( Imath::V2f( -1 ), Imath::V2f( 1 ) ),
 				arg( "clippingPlanes" ) = Imath::V2f( 0.1, 1000 )
 			)
 		) )

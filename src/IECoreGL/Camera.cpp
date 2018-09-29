@@ -50,11 +50,11 @@ IE_CORE_DEFINERUNTIMETYPED( Camera );
 Camera::Camera( const Imath::M44f &transform,
 	bool orthographic,
 	const Imath::V2i &resolution,
-	const Imath::Box2f &normalizedScreenWindow,
+	const Imath::Box2f &frustum,
 	const Imath::V2f &clippingPlanes
 )
 	:	m_transform( transform ), m_orthographic( orthographic ), m_resolution( resolution ),
-		m_normalizedScreenWindow( normalizedScreenWindow ), m_clippingPlanes( clippingPlanes )
+		m_frustum( frustum ), m_clippingPlanes( clippingPlanes )
 {
 }
 
@@ -78,14 +78,14 @@ const Imath::V2i &Camera::getResolution() const
 	return m_resolution;
 }
 
-void Camera::setNormalizedScreenWindow( const Imath::Box2f &normalizedScreenWindow )
+void Camera::setNormalizedScreenWindow( const Imath::Box2f &frustum )
 {
-	m_normalizedScreenWindow = normalizedScreenWindow;
+	m_frustum = frustum;
 }
 
 const Imath::Box2f &Camera::getNormalizedScreenWindow() const
 {
-	return m_normalizedScreenWindow;
+	return m_frustum;
 }
 
 void Camera::setClippingPlanes( const Imath::V2f &clippingPlanes )
@@ -105,16 +105,16 @@ void Camera::render( State *currentState ) const
 
 	if( m_orthographic )
 	{
-		glOrtho( m_normalizedScreenWindow.min.x, m_normalizedScreenWindow.max.x,
-			m_normalizedScreenWindow.min.y, m_normalizedScreenWindow.max.y,
+		glOrtho( m_frustum.min.x, m_frustum.max.x,
+			m_frustum.min.y, m_frustum.max.y,
 			m_clippingPlanes[0], m_clippingPlanes[1]
 		);
 	}
 	else
 	{
 		float n = m_clippingPlanes[0];
-		glFrustum( n * m_normalizedScreenWindow.min.x, n * m_normalizedScreenWindow.max.x,
-			n * m_normalizedScreenWindow.min.y, n * m_normalizedScreenWindow.max.y,
+		glFrustum( n * m_frustum.min.x, n * m_frustum.max.x,
+			n * m_frustum.min.y, n * m_frustum.max.y,
 			m_clippingPlanes[0], m_clippingPlanes[1]
 		);
 

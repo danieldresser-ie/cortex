@@ -234,19 +234,19 @@ class TestCamera( unittest.TestCase ) :
 
 	def testNormalizedScreenWindow( self ):
 		c = IECoreScene.Camera()
-		self.assertBox2fEqual( c.normalizedScreenWindow(), -1, -0.75, 1, 0.75 )
+		self.assertBox2fEqual( c.frustum(), -1, -0.75, 1, 0.75 )
 		c.setFocalLength( 2 )
-		self.assertBox2fEqual( c.normalizedScreenWindow(), -1, -0.75, 1, 0.75 )
+		self.assertBox2fEqual( c.frustum(), -1, -0.75, 1, 0.75 )
 		c.setProjection("perspective" )
-		self.assertBox2fEqual( c.normalizedScreenWindow(), -0.5, -0.375, 0.5, 0.375 )
+		self.assertBox2fEqual( c.frustum(), -0.5, -0.375, 0.5, 0.375 )
 		c.setAperture(imath.V2f( 4, 4 ) )
-		self.assertBox2fEqual( c.normalizedScreenWindow(), -1, -0.75, 1, 0.75 )
+		self.assertBox2fEqual( c.frustum(), -1, -0.75, 1, 0.75 )
 		c.setApertureOffset(imath.V2f( 1, 1 ) )
-		self.assertBox2fEqual( c.normalizedScreenWindow(), -0.5, -0.25, 1.5, 1.25 )
+		self.assertBox2fEqual( c.frustum(), -0.5, -0.25, 1.5, 1.25 )
 		c.setFocalLength( 1 )
-		self.assertBox2fEqual( c.normalizedScreenWindow(), -1, -0.5, 3, 2.5 )
+		self.assertBox2fEqual( c.frustum(), -1, -0.5, 3, 2.5 )
 		c.setResolution(imath.V2i( 100, 100 ) )
-		self.assertBox2fEqual( c.normalizedScreenWindow(), -1, -1, 3, 3 )
+		self.assertBox2fEqual( c.frustum(), -1, -1, 3, 3 )
 
 	def testRenderImageSpec( self ):
 		def B( x1, y1, x2, y2 ):

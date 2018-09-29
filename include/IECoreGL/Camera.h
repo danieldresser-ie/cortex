@@ -59,7 +59,7 @@ class IECOREGL_API Camera : public Renderable
 		Camera( const Imath::M44f &transform = Imath::M44f(),
 			bool orthographic = true,
 			const Imath::V2i &resolution = Imath::V2i( 640, 480 ),
-			const Imath::Box2f &normalizedScreenWindow = Imath::Box2f( Imath::V2f(-1), Imath::V2f(1)),
+			const Imath::Box2f &frustum = Imath::Box2f( Imath::V2f(-1), Imath::V2f(1)),
 			const Imath::V2f &clippingPlanes = Imath::V2f( 0.1, 1000 )
 		);
 
@@ -74,7 +74,7 @@ class IECOREGL_API Camera : public Renderable
 		void setResolution( const Imath::V2i &resolution );
 		const Imath::V2i &getResolution() const;
 
-		void setNormalizedScreenWindow( const Imath::Box2f &normalizedScreenWindow );
+		void setNormalizedScreenWindow( const Imath::Box2f &frustum );
 		const Imath::Box2f &getNormalizedScreenWindow() const;
 
 		void setClippingPlanes( const Imath::V2f &clippingPlanes );
@@ -114,7 +114,7 @@ class IECOREGL_API Camera : public Renderable
 		Imath::M44f m_transform;
 		bool m_orthographic;
 		Imath::V2i m_resolution;
-		Imath::Box2f m_normalizedScreenWindow;
+		Imath::Box2f m_frustum;
 		Imath::V2f m_clippingPlanes;
 
 };

@@ -69,7 +69,7 @@ IECore::RunTimeTypedPtr ToGLCameraConverter::doConversion( IECore::ConstObjectPt
 		Imath::M44f(),
 		camera->getProjection() == "orthographic",
 		camera->getResolution(),
-		camera->normalizedScreenWindow(),
+		camera->frustum(),
 		camera->getClippingPlanes()
 	);
 }

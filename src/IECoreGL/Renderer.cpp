@@ -520,10 +520,11 @@ void IECoreGL::Renderer::camera( const std::string &unusedName, const IECore::Co
 
 		IECoreGL::CameraPtr camera = IECore::runTimeCast<IECoreGL::Camera>( ToGLCameraConverter( coreCamera ).convert() );
 
+		// TODO delete this
 		// Cortex cameras are now driven by physical parameters, not a screenWindow
 		// But for compatibility with the deprecated GL stuff, if someone tries to override the computed
-		// normalizedScreenWindow, then stomp that straight onto the GL camera
-		auto screenWindowParm = parameters.find( "screenWindow" );
+		// frustum, then stomp that straight onto the GL camera
+		/*auto screenWindowParm = parameters.find( "screenWindow" );
 		if( screenWindowParm != parameters.end() )
 		{
 			Box2fData *screenWindowData = runTimeCast< Box2fData >( screenWindowParm->second.get() );	
@@ -531,7 +532,7 @@ void IECoreGL::Renderer::camera( const std::string &unusedName, const IECore::Co
 			{
 				camera->setNormalizedScreenWindow( screenWindowData->readable() );
 			}
-		}
+		}*/
 
 		// we have to store these till worldBegin, as only then are we sure what sort of renderer backend we have
 		if( camera )

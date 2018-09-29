@@ -320,19 +320,19 @@ Imath::Box2f Camera::fitWindow( const Imath::Box2f &window, Camera::FilmFit fitM
 	}
 }
 
-Imath::Box2f Camera::normalizedScreenWindow() const
+Imath::Box2f Camera::frustum() const
 {
-	return normalizedScreenWindow( getFilmFit() );
+	return frustum( getFilmFit() );
 }
 
-Imath::Box2f Camera::normalizedScreenWindow( FilmFit filmFit ) const
+Imath::Box2f Camera::frustum( FilmFit filmFit ) const
 {
 	Imath::V2i resolution = renderResolution();
 	float aspectRatio = float( std::max( 1, resolution.x ) ) / std::max( 1, resolution.y ) * getPixelAspectRatio();
-	return normalizedScreenWindow( filmFit, aspectRatio );
+	return frustum( filmFit, aspectRatio );
 }
 
-Imath::Box2f Camera::normalizedScreenWindow( FilmFit filmFit, float aspectRatio ) const
+Imath::Box2f Camera::frustum( FilmFit filmFit, float aspectRatio ) const
 {
 	Imath::V2f corner( 0.5f * getAperture() );
 

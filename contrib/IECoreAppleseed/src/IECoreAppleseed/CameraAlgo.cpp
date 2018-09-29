@@ -75,7 +75,7 @@ renderer::Camera *convert( const IECoreScene::Camera *camera )
 
 	V2f apertureOffset = camera->getApertureOffset();
 
-	const Box2f &screenWindow = camera->normalizedScreenWindow();
+	const Box2f &screenWindow = camera->frustum();
 	V2f fitAperture = screenWindow.size();
 	
 	if( projection=="perspective" )
