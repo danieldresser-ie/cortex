@@ -225,7 +225,6 @@ void Camera::remove##NAME() { parameters().erase(PROPERTY); }
 DECLARE_ACCESSORS( Projection, "projection", StringData, "orthographic" );
 // The complexity of the default values for these 4 parameters is just due to backwards compatibility for
 // old cameras with screenWindow baked in - once we're free of those, these will be constants
-// TODO - test these
 DECLARE_ACCESSORS( Aperture, "aperture", V2fData, defaultApertureRect().size() );
 DECLARE_ACCESSORS( ApertureOffset, "apertureOffset", V2fData, defaultApertureRect().center() );
 DECLARE_ACCESSORS( FocalLength, "focalLength", FloatData, 1.0f );
