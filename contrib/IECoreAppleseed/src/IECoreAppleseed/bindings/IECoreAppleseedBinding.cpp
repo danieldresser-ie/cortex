@@ -59,8 +59,6 @@ void bindCameraAlgo()
 	scope objectAlgoModuleScope( objectAlgoModule );
 
 	def( "convert", &cameraConvertWrapper );
-	def( "appleseedCameraProjectCameraSpacePoint", &CameraAlgo::appleseedCameraProjectCameraSpacePoint );
-
 }
 
 foundation::auto_release_ptr<renderer::Object> convertWrapper( const IECore::Object *primitive )

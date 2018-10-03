@@ -49,13 +49,6 @@ namespace CameraAlgo
 
 IECOREAPPLESEED_API renderer::Camera *convert( const IECoreScene::Camera *camera );
 
-// This tiny method is only declared here for use in a unit test, because Appleseed doesn't expose
-// project_camera_space_point to Python.  It's kind of ugly to have it here, should we just drop
-// the unit test?
-IECOREAPPLESEED_API Imath::V2f appleseedCameraProjectCameraSpacePoint( renderer::Camera *camera, const renderer::Project *project, const Imath::V3f &p );
-
-
-
 } // namespace CameraAlgo
 
 } // namespace IECoreAppleseed

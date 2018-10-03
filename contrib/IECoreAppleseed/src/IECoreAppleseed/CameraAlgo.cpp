@@ -126,19 +126,6 @@ renderer::Camera *convert( const IECoreScene::Camera *camera )
 	return result.release();
 }
 
-Imath::V2f appleseedCameraProjectCameraSpacePoint( renderer::Camera *camera, const renderer::Project *project, const Imath::V3f &p )
-{
-	camera->on_render_begin( *project, nullptr );
-	foundation::Vector3d aP( p[0], p[1], p[2] );
-	foundation::Vector2d ndc;
-	if( !camera->project_camera_space_point( aP, ndc ) )
-	{
-		throw Exception( "Projecting point failed" );
-	}
-	return Imath::V2f( ndc[0], ndc[1] );
-}
-
-
 } // namespace CameraAlgo
 
 } // namespace IECoreAppleseed
