@@ -361,7 +361,7 @@ Imath::Box2f Camera::frustum( FilmFit filmFit, float aspectRatio ) const
 	window.min += offset;
 	window.max += offset;
 
-	if ( getProjection() != "orthographic" && getFocalLength() != 0.0f ) {
+	if ( getProjection() == "perspective" && getFocalLength() != 0.0f ) {
 		window.min /= getFocalLength();
 		window.max /= getFocalLength();
 	}
