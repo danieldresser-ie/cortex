@@ -69,11 +69,11 @@ class IECORE_API MurmurHash
 
 	public :
 
-		MurmurHash();
-		MurmurHash( const MurmurHash &other );
+		inline MurmurHash();
+		inline MurmurHash( const MurmurHash &other );
 
 		// Construct directly from known internal values
-		MurmurHash( uint64_t h1, uint64_t h2 );
+		inline MurmurHash( uint64_t h1, uint64_t h2 );
 
 		inline MurmurHash &append( char data );
 		inline MurmurHash &append( unsigned char data );

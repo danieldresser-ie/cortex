@@ -131,6 +131,21 @@ inline void MurmurHash::append( const void *data, size_t bytes, int elementSize 
 	m_h2 = h2;
 }
 
+inline MurmurHash::MurmurHash()
+    :   m_h1( 0 ), m_h2( 0 )
+{
+}
+
+inline MurmurHash::MurmurHash( const MurmurHash &other )
+    :   m_h1( other.m_h1 ), m_h2( other.m_h2 )
+{
+}
+
+inline MurmurHash::MurmurHash( uint64_t h1, uint64_t h2 )
+    :   m_h1( h1 ), m_h2( h2 )
+{
+}
+
 inline MurmurHash &MurmurHash::append( char data )
 {
 	append( &data, sizeof( char ), sizeof( char ) );
