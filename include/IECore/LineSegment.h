@@ -39,8 +39,8 @@
 #include "IECore/VectorTraits.h"
 
 IECORE_PUSH_DEFAULT_VISIBILITY
-#include "OpenEXR/ImathPlane.h"
-#include "OpenEXR/ImathVec.h"
+#include "Imath/ImathPlane.h"
+#include "Imath/ImathVec.h"
 IECORE_POP_DEFAULT_VISIBILITY
 
 namespace IECore

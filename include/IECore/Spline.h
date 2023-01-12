@@ -40,7 +40,7 @@
 #include "IECore/MurmurHash.h"
 
 IECORE_PUSH_DEFAULT_VISIBILITY
-#include "OpenEXR/ImathColor.h"
+#include "Imath/ImathColor.h"
 IECORE_POP_DEFAULT_VISIBILITY
 
 #include "boost/numeric/interval.hpp"

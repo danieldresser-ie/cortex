@@ -40,8 +40,8 @@
 #include "boost/python.hpp"
 #include "boost/tokenizer.hpp"
 
-#include "OpenEXR/ImathMatrixAlgo.h"
-#include "OpenEXR/ImathBoxAlgo.h"
+#include "Imath/ImathMatrixAlgo.h"
+#include "Imath/ImathBoxAlgo.h"
 
 #include "IECoreGL/Renderer.h"
 #include "IECoreGL/Scene.h"

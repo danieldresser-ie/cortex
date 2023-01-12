@@ -2,7 +2,7 @@
 #include "IECore/Exception.h"
 #include "IECore/ImathRandAdapter.h"
 
-#include "OpenEXR/ImathRandom.h"
+#include "Imath/ImathRandom.h"
 
 #include <fstream>
 #include <algorithm>

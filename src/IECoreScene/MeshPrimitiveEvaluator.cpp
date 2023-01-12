@@ -43,11 +43,11 @@
 #include "IECore/TriangleAlgo.h"
 
 IECORE_PUSH_DEFAULT_VISIBILITY
-#include "OpenEXR/ImathMatrix.h"
+#include "Imath/ImathMatrix.h"
 IECORE_POP_DEFAULT_VISIBILITY
 
-#include "OpenEXR/ImathBoxAlgo.h"
-#include "OpenEXR/ImathLineAlgo.h"
+#include "Imath/ImathBoxAlgo.h"
+#include "Imath/ImathLineAlgo.h"
 
 #include <cassert>
 

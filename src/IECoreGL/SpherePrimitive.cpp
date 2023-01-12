@@ -41,7 +41,7 @@
 #include "IECore/Math.h"
 #include "IECore/MessageHandler.h"
 
-#include "OpenEXR/ImathFun.h"
+#include "Imath/ImathFun.h"
 
 using namespace IECoreGL;
 using namespace Imath;

@@ -42,8 +42,8 @@
 #include "IECore/TransformationMatrixData.h"
 
 IECORE_PUSH_DEFAULT_VISIBILITY
-#include "OpenEXR/ImathBoxAlgo.h"
-#include "OpenEXR/ImathMatrixAlgo.h"
+#include "Imath/ImathBoxAlgo.h"
+#include "Imath/ImathMatrixAlgo.h"
 IECORE_POP_DEFAULT_VISIBILITY
 
 #include "MGR/MGR_Node.h"

@@ -35,7 +35,7 @@
 #ifndef IECORENUKE_CURVELOOKUP_INL
 #define IECORENUKE_CURVELOOKUP_INL
 
-#include "OpenEXR/ImathFun.h"
+#include "Imath/ImathFun.h"
 
 #include <cassert>
 #include <vector>

@@ -40,11 +40,11 @@
 #include "IECore/TypedData.h"
 
 IECORE_PUSH_DEFAULT_VISIBILITY
-#include "OpenEXR/ImathBox.h"
-#include "OpenEXR/ImathColor.h"
-#include "OpenEXR/ImathQuat.h"
-#include "OpenEXR/ImathVec.h"
-#include "OpenEXR/half.h"
+#include "Imath/ImathBox.h"
+#include "Imath/ImathColor.h"
+#include "Imath/ImathQuat.h"
+#include "Imath/ImathVec.h"
+#include "Imath/half.h"
 IECORE_POP_DEFAULT_VISIBILITY
 
 #include <string>

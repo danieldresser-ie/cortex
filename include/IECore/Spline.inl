@@ -37,7 +37,7 @@
 
 #include "IECore/Exception.h"
 
-#include "OpenEXR/half.h"
+#include "Imath/half.h"
 
 #include "boost/format.hpp"
 

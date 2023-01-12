@@ -39,7 +39,7 @@
 #include "maya/MFnTransform.h"
 #include "maya/MPlug.h"
 
-#include "OpenEXR/ImathMatrixAlgo.h"
+#include "Imath/ImathMatrixAlgo.h"
 #include "IECore/AngleConversion.h"
 #include "IECore/MessageHandler.h"
 #include "IECore/SimpleTypedData.h"

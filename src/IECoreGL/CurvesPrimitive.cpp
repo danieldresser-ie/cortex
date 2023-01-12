@@ -45,9 +45,9 @@
 #include "IECore/MessageHandler.h"
 #include "IECore/SimpleTypedData.h"
 
-#include "OpenEXR/ImathMatrixAlgo.h"
-#include "OpenEXR/ImathVecAlgo.h"
-#include "OpenEXR/ImathFun.h"
+#include "Imath/ImathMatrixAlgo.h"
+#include "Imath/ImathVecAlgo.h"
+#include "Imath/ImathFun.h"
 
 using namespace IECoreGL;
 using namespace Imath;

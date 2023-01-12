@@ -38,7 +38,7 @@
 
 #include "IECore/MurmurHash.h"
 
-#include "OpenEXR/ImathFun.h"
+#include "Imath/ImathFun.h"
 
 #include "boost/format.hpp"
 

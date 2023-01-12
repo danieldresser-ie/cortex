@@ -37,7 +37,7 @@
 
 #include "IECore/CircularIterator.h"
 
-#include "OpenEXR/ImathVecAlgo.h"
+#include "Imath/ImathVecAlgo.h"
 
 namespace IECore
 {

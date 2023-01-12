@@ -42,7 +42,7 @@
 #include "IECore/Timer.h"
 #include "IECore/VectorTypedData.h"
 
-#include "OpenEXR/ImathRandom.h"
+#include "Imath/ImathRandom.h"
 
 #include "boost/algorithm/string/predicate.hpp"
 

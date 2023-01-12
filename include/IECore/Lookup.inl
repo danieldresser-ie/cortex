@@ -38,7 +38,7 @@
 
 #include "IECore/FastFloat.h"
 
-#include "OpenEXR/ImathFun.h"
+#include "Imath/ImathFun.h"
 
 namespace IECore
 {

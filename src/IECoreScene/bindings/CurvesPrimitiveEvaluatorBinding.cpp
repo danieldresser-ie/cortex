@@ -42,7 +42,7 @@
 #include "IECorePython/RefCountedBinding.h"
 #include "IECorePython/RunTimeTypedBinding.h"
 
-#include "OpenEXR/ImathRandom.h"
+#include "Imath/ImathRandom.h"
 
 #include "tbb/parallel_for.h"
 

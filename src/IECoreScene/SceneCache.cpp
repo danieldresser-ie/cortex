@@ -50,7 +50,7 @@
 #include "IECore/TransformationMatrixData.h"
 #include "IECore/PathMatcherData.h"
 
-#include "OpenEXR/ImathBoxAlgo.h"
+#include "Imath/ImathBoxAlgo.h"
 
 #include "boost/core/demangle.hpp"
 #include "boost/tuple/tuple.hpp"

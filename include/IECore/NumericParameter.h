@@ -38,7 +38,7 @@
 #include "IECore/Parameter.h"
 #include "IECore/TypedData.h"
 
-#include "OpenEXR/half.h"
+#include "Imath/half.h"
 
 namespace IECore
 {

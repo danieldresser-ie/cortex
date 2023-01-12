@@ -41,7 +41,7 @@
 
 #include "TBBBinding.h"
 
-#include "OpenEXR/ImathEuler.h"
+#include "Imath/ImathEuler.h"
 
 #include "IECorePython/RefCountedBinding.h"
 #include "IECorePython/RunTimeTypedBinding.h"

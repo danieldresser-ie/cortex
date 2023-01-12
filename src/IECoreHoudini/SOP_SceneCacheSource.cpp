@@ -50,7 +50,7 @@
 #include "IECore/DespatchTypedData.h"
 #include "IECore/TypeTraits.h"
 
-#include "OpenEXR/ImathMatrixAlgo.h"
+#include "Imath/ImathMatrixAlgo.h"
 
 #include "GA/GA_Names.h"
 #include "OP/OP_NodeInfoParms.h"

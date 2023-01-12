@@ -39,10 +39,10 @@
 #include "IECore/Math.h"
 
 IECORE_PUSH_DEFAULT_VISIBILITY
-#include "OpenEXR/ImathQuat.h"
+#include "Imath/ImathQuat.h"
 IECORE_POP_DEFAULT_VISIBILITY
 
-#include "OpenEXR/ImathRandom.h"
+#include "Imath/ImathRandom.h"
 
 namespace IECore
 {

@@ -44,11 +44,11 @@ IECORE_PUSH_DEFAULT_VISIBILITY
 #include "pxr/base/vt/value.h"
 IECORE_POP_DEFAULT_VISIBILITY
 
-#include "OpenEXR/half.h"
-#include "OpenEXR/ImathColor.h"
-#include "OpenEXR/ImathMatrix.h"
-#include "OpenEXR/ImathQuat.h"
-#include "OpenEXR/ImathVec.h"
+#include "Imath/half.h"
+#include "Imath/ImathColor.h"
+#include "Imath/ImathMatrix.h"
+#include "Imath/ImathQuat.h"
+#include "Imath/ImathVec.h"
 
 namespace IECoreUSD
 {

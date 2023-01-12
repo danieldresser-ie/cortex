@@ -39,7 +39,7 @@
 #include "IECore/Exception.h"
 #include "IECore/Interpolator.h"
 
-#include "OpenEXR/ImathFun.h"
+#include "Imath/ImathFun.h"
 
 using namespace Imath;
 using namespace IECore;

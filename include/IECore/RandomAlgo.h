@@ -35,7 +35,7 @@
 #ifndef IECORE_RANDOMALGO_H
 #define IECORE_RANDOMALGO_H
 
-#include "OpenEXR/ImathRandom.h"
+#include "Imath/ImathRandom.h"
 
 namespace IECore
 {

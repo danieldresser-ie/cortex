@@ -75,7 +75,7 @@
 #include "maya/MFnSet.h"
 #include "maya/MFnInstancer.h"
 
-#include "OpenEXR/ImathBoxAlgo.h"
+#include "Imath/ImathBoxAlgo.h"
 
 #include "boost/algorithm/string.hpp"
 #include "boost/tokenizer.hpp"

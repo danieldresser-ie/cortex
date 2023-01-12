@@ -40,7 +40,7 @@
 
 #include "IECore/MurmurHash.h"
 
-#include "OpenEXR/ImathBoxAlgo.h"
+#include "Imath/ImathBoxAlgo.h"
 
 #include "boost/format.hpp"
 #include "boost/lexical_cast.hpp"

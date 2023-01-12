@@ -42,8 +42,8 @@
 #include "IECore/Export.h"
 
 IECORE_PUSH_DEFAULT_VISIBILITY
-#include "OpenEXR/ImathBox.h"
-#include "OpenEXR/ImathColor.h"
+#include "Imath/ImathBox.h"
+#include "Imath/ImathColor.h"
 IECORE_POP_DEFAULT_VISIBILITY
 
 namespace IECoreGL

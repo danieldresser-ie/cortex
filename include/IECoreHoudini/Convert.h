@@ -41,12 +41,12 @@
 #include "IECore/Data.h"
 
 IECORE_PUSH_DEFAULT_VISIBILITY
-#include "OpenEXR/ImathBox.h"
-#include "OpenEXR/ImathColor.h"
-#include "OpenEXR/ImathEuler.h"
-#include "OpenEXR/ImathMatrix.h"
-#include "OpenEXR/ImathQuat.h"
-#include "OpenEXR/ImathVec.h"
+#include "Imath/ImathBox.h"
+#include "Imath/ImathColor.h"
+#include "Imath/ImathEuler.h"
+#include "Imath/ImathMatrix.h"
+#include "Imath/ImathQuat.h"
+#include "Imath/ImathVec.h"
 IECORE_POP_DEFAULT_VISIBILITY
 
 #include "UT/UT_BoundingBox.h"

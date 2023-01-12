@@ -36,7 +36,7 @@
 #include "IECore/QuatAlgo.h"
 
 IECORE_PUSH_DEFAULT_VISIBILITY
-#include "OpenEXR/ImathQuat.h"
+#include "Imath/ImathQuat.h"
 IECORE_POP_DEFAULT_VISIBILITY
 
 namespace IECore

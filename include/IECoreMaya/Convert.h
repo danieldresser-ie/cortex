@@ -41,12 +41,12 @@
 #include "IECore/Data.h"
 #include "IECore/TransformationMatrix.h"
 
-#include "OpenEXR/ImathVec.h"
-#include "OpenEXR/ImathColor.h"
-#include "OpenEXR/ImathBox.h"
-#include "OpenEXR/ImathQuat.h"
-#include "OpenEXR/ImathMatrix.h"
-#include "OpenEXR/ImathEuler.h"
+#include "Imath/ImathVec.h"
+#include "Imath/ImathColor.h"
+#include "Imath/ImathBox.h"
+#include "Imath/ImathQuat.h"
+#include "Imath/ImathMatrix.h"
+#include "Imath/ImathEuler.h"
 
 #include "maya/MString.h"
 #include "maya/MBoundingBox.h"

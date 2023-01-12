@@ -77,7 +77,7 @@
 #include "IECore/SimpleTypedData.h"
 #include "IECore/SplineData.h"
 
-#include "OpenEXR/ImathBoxAlgo.h"
+#include "Imath/ImathBoxAlgo.h"
 
 #include <mutex>
 #include <stack>

@@ -37,7 +37,7 @@
 #include "IECoreGL/GL.h"
 #include "IECoreGL/State.h"
 
-#include "OpenEXR/ImathBoxAlgo.h"
+#include "Imath/ImathBoxAlgo.h"
 
 using namespace IECoreGL;
 using namespace Imath;

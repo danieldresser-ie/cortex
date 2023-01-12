@@ -40,10 +40,10 @@
 #include "DDImage/Hash.h"
 
 IECORE_PUSH_DEFAULT_VISIBILITY
-#include "OpenEXR/ImathBox.h"
-#include "OpenEXR/ImathColor.h"
-#include "OpenEXR/ImathMatrix.h"
-#include "OpenEXR/ImathVec.h"
+#include "Imath/ImathBox.h"
+#include "Imath/ImathColor.h"
+#include "Imath/ImathMatrix.h"
+#include "Imath/ImathVec.h"
 IECORE_POP_DEFAULT_VISIBILITY
 
 namespace IECoreNuke

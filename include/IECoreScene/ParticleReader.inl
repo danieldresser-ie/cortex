@@ -38,7 +38,7 @@
 #include "IECore/Convert.h"
 #include "IECore/MessageHandler.h"
 
-#include "OpenEXR/ImathRandom.h"
+#include "Imath/ImathRandom.h"
 
 namespace IECoreScene
 {

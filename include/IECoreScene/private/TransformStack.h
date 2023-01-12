@@ -40,7 +40,7 @@
 #include "IECore/Export.h"
 
 IECORE_PUSH_DEFAULT_VISIBILITY
-#include "OpenEXR/ImathMatrix.h"
+#include "Imath/ImathMatrix.h"
 IECORE_POP_DEFAULT_VISIBILITY
 
 #include <stack>

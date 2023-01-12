@@ -39,7 +39,7 @@
 #include "IECore/Export.h"
 
 IECORE_PUSH_DEFAULT_VISIBILITY
-#include "OpenEXR/half.h"
+#include "Imath/half.h"
 IECORE_POP_DEFAULT_VISIBILITY
 
 using namespace boost::python;

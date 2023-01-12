@@ -37,7 +37,7 @@
 
 #include "IECore/VectorOps.h"
 
-#include "OpenEXR/ImathLineAlgo.h"
+#include "Imath/ImathLineAlgo.h"
 
 #include <cassert>
 

@@ -34,7 +34,7 @@
 
 #include "boost/python.hpp"
 
-#include "OpenEXR/half.h"
+#include "Imath/half.h"
 
 #include "IECoreImage/ImagePrimitive.h"
 

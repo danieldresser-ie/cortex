@@ -39,7 +39,7 @@
 
 #include "IECore/DespatchTypedData.h"
 
-#include "OpenEXR/ImathMath.h"
+#include "Imath/ImathMath.h"
 
 #include <cassert>
 

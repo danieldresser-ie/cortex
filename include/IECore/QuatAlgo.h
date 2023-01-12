@@ -42,8 +42,8 @@
 #include "IECore/Export.h"
 
 IECORE_PUSH_DEFAULT_VISIBILITY
-#include "OpenEXR/ImathQuat.h"
-#include "OpenEXR/ImathMath.h"
+#include "Imath/ImathQuat.h"
+#include "Imath/ImathMath.h"
 IECORE_POP_DEFAULT_VISIBILITY
 
 namespace IECore

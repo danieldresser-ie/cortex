@@ -37,7 +37,7 @@
 
 #include "IECoreNuke/ParameterHandler.h"
 
-#include "OpenEXR/ImathBox.h"
+#include "Imath/ImathBox.h"
 
 namespace IECoreNuke
 {

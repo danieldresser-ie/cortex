@@ -43,7 +43,7 @@
 #include "IECore/NullObject.h"
 #include "IECore/TransformationMatrixData.h"
 
-#include "OpenEXR/ImathBoxAlgo.h"
+#include "Imath/ImathBoxAlgo.h"
 
 #include "boost/algorithm/string.hpp"
 #include "boost/format.hpp"

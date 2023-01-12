@@ -42,8 +42,8 @@
 #include "IECore/RefCounted.h"
 
 IECORE_PUSH_DEFAULT_VISIBILITY
-#include "OpenEXR/ImathBox.h"
-#include "OpenEXR/ImathMatrix.h"
+#include "Imath/ImathBox.h"
+#include "Imath/ImathMatrix.h"
 IECORE_POP_DEFAULT_VISIBILITY
 
 #include <vector>

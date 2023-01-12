@@ -37,7 +37,7 @@
 
 #include "IECoreNuke/ParameterHandler.h"
 
-#include "OpenEXR/ImathColor.h"
+#include "Imath/ImathColor.h"
 
 namespace IECoreNuke
 {

@@ -42,7 +42,7 @@
 #include "IECore/SimpleTypedData.h"
 #include "IECore/VectorTypedData.h"
 
-#include "OpenEXR/ImathFun.h"
+#include "Imath/ImathFun.h"
 
 using namespace IECore;
 using namespace IECoreScene;

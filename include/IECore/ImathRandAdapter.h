@@ -35,7 +35,7 @@
 #ifndef IE_CORE_IMATHRANDADAPTER_H
 #define IE_CORE_IMATHRANDADAPTER_H
 
-#include "OpenEXR/ImathRandom.h"
+#include "Imath/ImathRandom.h"
 
 namespace IECore
 {

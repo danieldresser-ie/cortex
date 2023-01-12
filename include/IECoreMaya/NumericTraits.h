@@ -38,8 +38,8 @@
 #include "boost/static_assert.hpp"
 
 #include "maya/MFnNumericData.h"
-#include "OpenEXR/ImathVec.h"
-#include "OpenEXR/ImathColor.h"
+#include "Imath/ImathVec.h"
+#include "Imath/ImathColor.h"
 
 namespace IECoreMaya
 {

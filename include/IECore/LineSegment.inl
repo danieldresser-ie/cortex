@@ -35,7 +35,7 @@
 #ifndef IECORE_LINESEGMENT_INL
 #define IECORE_LINESEGMENT_INL
 
-#include "OpenEXR/ImathFun.h"
+#include "Imath/ImathFun.h"
 
 namespace IECore
 {

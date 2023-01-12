@@ -41,8 +41,8 @@
 #include "IECore/SimpleTypedData.h"
 #include "IECore/TriangleAlgo.h"
 
-#include "OpenEXR/ImathBoxAlgo.h"
-#include "OpenEXR/ImathLineAlgo.h"
+#include "Imath/ImathBoxAlgo.h"
+#include "Imath/ImathLineAlgo.h"
 
 #include <cassert>
 
