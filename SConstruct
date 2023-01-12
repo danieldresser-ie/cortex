@@ -199,6 +199,18 @@ o.Add(
 )
 
 o.Add(
+	"IMATH_LIB_PATH",
+	"The path to the Imath lib directory.",
+	"",
+)
+
+o.Add(
+	"IMATH_INCLUDE_PATH",
+	"The path to the Imath include directory.",
+	"$IMATH_INCLUDE_PATH",
+)
+
+o.Add(
 	"ILMBASE_LIB_PATH",
 	"The path to the IlmBase lib directory.",
 	"$OPENEXR_LIB_PATH",
@@ -1064,6 +1076,8 @@ systemIncludeArgument = "/external:I" if env[ "PLATFORM" ] == "win32" else "-isy
 dependencyIncludes = [
 	systemIncludeArgument, "$BOOST_INCLUDE_PATH",
 	systemIncludeArgument, "$OPENEXR_INCLUDE_PATH",
+	systemIncludeArgument, "$IMATH_INCLUDE_PATH",
+	systemIncludeArgument, "$IMATH_INCLUDE_PATH/Imath",
 	systemIncludeArgument, "$ILMBASE_INCLUDE_PATH",
 	systemIncludeArgument, "$TBB_INCLUDE_PATH",
 	systemIncludeArgument, "$BLOSC_INCLUDE_PATH",
@@ -1080,6 +1094,7 @@ env.Prepend(
 		"$TBB_LIB_PATH",
 		"$BOOST_LIB_PATH",
 		"$OPENEXR_LIB_PATH",
+		"$IMATH_LIB_PATH",
 		"$ILMBASE_LIB_PATH",
 		"$FREETYPE_LIB_PATH",
 		"$BLOSC_LIB_PATH"
@@ -1377,7 +1392,7 @@ env.Append( LIBS = [
 		"blosc" + env["BLOSC_LIB_SUFFIX"],
 		"Iex" + env["OPENEXR_LIB_SUFFIX"],
 		"Imath" + env["OPENEXR_LIB_SUFFIX"],
-		"IlmImf" + env["OPENEXR_LIB_SUFFIX"],
+		"OpenEXR" + env["OPENEXR_LIB_SUFFIX"],
 		"IlmThread" + env["OPENEXR_LIB_SUFFIX"],
 	]
 )
@@ -1705,12 +1720,13 @@ def writePkgConfig( env, python_env ):
 	python_includes = python_env.subst("$PYTHON_INCLUDE_FLAGS")
 	openexr_includes = "-I%s -I%s/OpenEXR" % (env['OPENEXR_INCLUDE_PATH'],
 											env['OPENEXR_INCLUDE_PATH'])
+	imath_includes = "-I%s" % env['IMATH_INCLUDE_PATH']
 	if env['ILMBASE_INCLUDE_PATH']!=env['OPENEXR_INCLUDE_PATH']:
 		openexr_includes = "-I%s -I%s/OpenEXR -I%s -I%s/OpenEXR" % (env['ILMBASE_INCLUDE_PATH'],
 																	env['ILMBASE_INCLUDE_PATH'],
 																	env['OPENEXR_INCLUDE_PATH'],
 																	env['OPENEXR_INCLUDE_PATH'])
-	fd.write( "Cflags: -I${includedir} %s -I%s %s\n" % (openexr_includes,
+	fd.write( "Cflags: -I${includedir} %s %s -I%s %s\n" % (openexr_includes, imath_includes,
 														env['BOOST_INCLUDE_PATH'],
 														python_includes ) )
 	fd.close()

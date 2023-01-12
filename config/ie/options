@@ -115,6 +115,7 @@ if targetApp :
 	compilerVersion = targetAppReg["compilerVersion"]
 	cxxStd = targetAppReg.get( "cxxStd", cortexReg.get( "cxxStd", "c++11" ) )
 	openEXRVersion = targetAppReg.get( "OpenEXRVersion", cortexReg["OpenEXRVersion"] )
+	imathVersion = "3.1.5" #TODO
 	alembicVersion = targetAppReg.get( "AlembicVersion", cortexReg["AlembicVersion"] )
 	vdbVersion = targetAppReg.get( "OpenVDBVersion", cortexReg["OpenVDBVersion"] )
 	bloscVersion = targetAppReg.get( "bloscVersion", cortexReg["bloscVersion"] )
@@ -138,6 +139,7 @@ else :
 		pythonVersion = cortexReg["preferredPythonVersion"]
 	cxxStd = cortexReg.get( "cxxStd", "c++11" )
 	openEXRVersion = cortexReg["OpenEXRVersion"]
+	imathVersion = "3.1.5" #TODO
 	alembicVersion = cortexReg["AlembicVersion"]
 	vdbVersion = cortexReg.get("OpenVDBVersion", "4.0.2")
 	bloscVersion = cortexReg.get("bloscVersion" )
@@ -184,7 +186,10 @@ BOOST_PYTHON_LIB_SUFFIX = IEEnv.BuildUtil.libSuffix(
 )
 
 OPENEXR_INCLUDE_PATH = "/software/tools/include/" + platform + "/OpenEXR/" + openEXRVersion
+IMATH_INCLUDE_PATH = os.path.join( "/software", "apps", "imath", imathVersion, IEEnv.platform(), compiler, compilerVersion, "include" ),
+
 OPENEXR_LIB_PATH = os.path.join( "/software", "tools", "lib", platform, compiler, compilerVersion )
+IMATH_LIB_PATH = os.path.join( "/software", "apps", "imath", imathVersion, IEEnv.platform(), compiler, compilerVersion, "lib" ),
 ILMBASE_LIB_PATH = os.path.join( "/software", "tools", "lib", platform, compiler, compilerVersion )
 OPENEXR_LIB_SUFFIX = IEEnv.BuildUtil.libSuffix( "OpenEXR", openEXRVersion )
 
