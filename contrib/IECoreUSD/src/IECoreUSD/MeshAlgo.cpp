@@ -51,86 +51,129 @@ using namespace IECoreUSD;
 // Reading
 //////////////////////////////////////////////////////////////////////////
 
+
+// Some quick code from online to measure memory usage
+
+/*
+ * Author:  David Robert Nadeau
+ * Site:    http://NadeauSoftware.com/
+ * License: Creative Commons Attribution 3.0 Unported License
+ *          http://creativecommons.org/licenses/by/3.0/deed.en_US
+ * Available here : https://stackoverflow.com/a/14927379
+ */
+
+#if defined(_WIN32)
+#include <windows.h>
+#include <psapi.h>
+
+#elif defined(__unix__) || defined(__unix) || defined(unix) || (defined(__APPLE__) && defined(__MACH__))
+#include <unistd.h>
+#include <sys/resource.h>
+
+#if defined(__APPLE__) && defined(__MACH__)
+#include <mach/mach.h>
+
+#elif (defined(_AIX) || defined(__TOS__AIX__)) || (defined(__sun__) || defined(__sun) || defined(sun) && (defined(__SVR4) || defined(__svr4__)))
+#include <fcntl.h>
+#include <procfs.h>
+
+#elif defined(__linux__) || defined(__linux) || defined(linux) || defined(__gnu_linux__)
+#include <stdio.h>
+
+#endif
+
+#else
+#error "Cannot define getPeakRSS( ) or getCurrentRSS( ) for an unknown OS."
+#endif
+
+
 namespace
 {
 
+/**
+ * Returns the current resident set size (physical memory use) measured
+ * in bytes, or zero if the value cannot be determined on this OS.
+ */
+size_t getCurrentRSS( )
+{
+#if defined(_WIN32)
+    /* Windows -------------------------------------------------- */
+    PROCESS_MEMORY_COUNTERS info;
+    GetProcessMemoryInfo( GetCurrentProcess( ), &info, sizeof(info) );
+    return (size_t)info.WorkingSetSize;
+
+#elif defined(__APPLE__) && defined(__MACH__)
+    /* OSX ------------------------------------------------------ */
+    struct mach_task_basic_info info;
+    mach_msg_type_number_t infoCount = MACH_TASK_BASIC_INFO_COUNT;
+    if ( task_info( mach_task_self( ), MACH_TASK_BASIC_INFO,
+        (task_info_t)&info, &infoCount ) != KERN_SUCCESS )
+        return (size_t)0L;      /* Can't access? */
+    return (size_t)info.resident_size;
+
+#elif defined(__linux__) || defined(__linux) || defined(linux) || defined(__gnu_linux__)
+    /* Linux ---------------------------------------------------- */
+    long rss = 0L;
+    FILE* fp = NULL;
+    if ( (fp = fopen( "/proc/self/statm", "r" )) == NULL )
+        return (size_t)0L;      /* Can't open? */
+    if ( fscanf( fp, "%*s%ld", &rss ) != 1 )
+    {
+        fclose( fp );
+        return (size_t)0L;      /* Can't read? */
+    }
+    fclose( fp );
+    return (size_t)rss * (size_t)sysconf( _SC_PAGESIZE);
+
+#else
+    /* AIX, BSD, Solaris, and Unknown OS ------------------------ */
+    return (size_t)0L;          /* Unsupported. */
+#endif
+}
+
 IECore::ObjectPtr readMesh( pxr::UsdGeomMesh &mesh, pxr::UsdTimeCode time, const Canceller *canceller )
 {
-	pxr::UsdAttribute subdivSchemeAttr = mesh.GetSubdivisionSchemeAttr();
+	std::cerr << "Initial memory "  << getCurrentRSS() << "\n";
+    {
+        const pxr::UsdGeomPrimvar nPrimVar = mesh.GetPrimvar( pxr::TfToken( "normals" ) );
+        pxr::VtValue nValue;
+        nPrimVar.Get( &nValue, time );
 
-	pxr::TfToken subdivScheme;
-	subdivSchemeAttr.Get( &subdivScheme );
-
-	pxr::VtIntArray faceVertexCounts;
-	Canceller::check( canceller );
-	mesh.GetFaceVertexCountsAttr().Get( &faceVertexCounts, time );
-	IECore::IntVectorDataPtr vertexCountData = DataAlgo::fromUSD( faceVertexCounts );
-
-	pxr::VtIntArray faceVertexIndices;
-	Canceller::check( canceller );
-	mesh.GetFaceVertexIndicesAttr().Get( &faceVertexIndices, time  );
-	IECore::IntVectorDataPtr vertexIndicesData = DataAlgo::fromUSD( faceVertexIndices );
-
-	IECoreScene::MeshPrimitivePtr newMesh = new IECoreScene::MeshPrimitive( vertexCountData, vertexIndicesData );
-	PrimitiveAlgo::readPrimitiveVariables( mesh, time, newMesh.get(), canceller );
-
-	if( subdivScheme == pxr::UsdGeomTokens->catmullClark )
-	{
-		newMesh->setInterpolation( "catmullClark" );
-	}
-
-	// Corners
-
-	pxr::VtIntArray cornerIndices;
-	pxr::VtFloatArray cornerSharpnesses;
-	mesh.GetCornerIndicesAttr().Get( &cornerIndices, time );
-	mesh.GetCornerSharpnessesAttr().Get( &cornerSharpnesses, time );
-	if( cornerIndices.size() )
-	{
-		IECore::IntVectorDataPtr cornerIndicesData = DataAlgo::fromUSD( cornerIndices );
-		Canceller::check( canceller );
-		IECore::FloatVectorDataPtr cornerSharpnessesData = DataAlgo::fromUSD( cornerSharpnesses );
-		newMesh->setCorners( cornerIndicesData.get(), cornerSharpnessesData.get() );
-	}
-
-	// Creases
-
-	pxr::VtIntArray creaseLengths;
-	pxr::VtIntArray creaseIndices;
-	pxr::VtFloatArray creaseSharpnesses;
-	mesh.GetCreaseLengthsAttr().Get( &creaseLengths, time );
-	mesh.GetCreaseIndicesAttr().Get( &creaseIndices, time );
-	mesh.GetCreaseSharpnessesAttr().Get( &creaseSharpnesses, time );
-	if( creaseLengths.size() )
-	{
-		if( creaseSharpnesses.size() == creaseLengths.size() )
+		std::cerr << "Got VtValue for normals but not yet read "  << getCurrentRSS() << "\n";
+		auto nArray = nValue.Get<pxr::VtArray<pxr::GfVec3f>>();
+		const Imath::V3f *nArrayTyped = reinterpret_cast<const Imath::V3f *>( nArray.cdata() );
+		
+		Imath::V3f accum( 0 );
+		for( unsigned int i = 0; i < nArray.size(); i++ )
 		{
-			Canceller::check( canceller );
-			IECore::IntVectorDataPtr creaseLengthsData = DataAlgo::fromUSD( creaseLengths );
-			Canceller::check( canceller );
-			IECore::IntVectorDataPtr creaseIndicesData = DataAlgo::fromUSD( creaseIndices );
-			Canceller::check( canceller );
-			IECore::FloatVectorDataPtr creaseSharpnessesData = DataAlgo::fromUSD( creaseSharpnesses );
-			newMesh->setCreases( creaseLengthsData.get(), creaseIndicesData.get(), creaseSharpnessesData.get() );
+			accum += nArrayTyped[i];
 		}
-		else
+		std::cerr << "ACCUM normals : " << accum << "\n";
+		std::cerr << "Memory after accumulating normals "  << getCurrentRSS() << "\n";
+    }
+	std::cerr << "Memory after releasing normals "  << getCurrentRSS() << "\n";
+
+    {
+        const pxr::UsdGeomPrimvar stPrimVar = mesh.GetPrimvar( pxr::TfToken( "st" ) );
+        pxr::VtValue stValue;
+        stPrimVar.Get( &stValue, time );
+		std::cerr << "Got VtValue for st but not yet read "  << getCurrentRSS() << "\n";
+
+		auto stArray = stValue.Get<pxr::VtArray<pxr::GfVec2f>>();
+
+		const Imath::V2f *stArrayTyped = reinterpret_cast<const Imath::V2f *>( stArray.cdata() );
+		Imath::V2f accumSt( 0 );
+		for( unsigned int i = 0; i < stArray.size(); i++ )
 		{
-			// USD documentation suggests that it is possible to author a sharpness per edge
-			// within a single crease, rather than just a sharpness per crease. We don't know how
-			// we would author one of these in practice (certainly not in Maya), and we're not sure
-			// why we'd want to. For now we ignore them.
-			IECore::msg( IECore::Msg::Warning, "USDScene", "Ignoring creases with varying sharpness" );
+			accumSt += stArrayTyped[i];
 		}
-	}
+		std::cerr << "ACCUM st : " << accumSt << "\n";
+		std::cerr << "Memory after accumulating st "  << getCurrentRSS() << "\n";
+    }
+	std::cerr << "Memory after releasing st "  << getCurrentRSS() << "\n";
 
-	pxr::TfToken orientation;
-	mesh.GetOrientationAttr().Get( &orientation );
-	if( orientation == pxr::UsdGeomTokens->leftHanded )
-	{
-		MeshAlgo::reverseWinding( newMesh.get(), canceller );
-	}
+	return MeshPrimitive::createPlane( Imath::Box2f( Imath::V2f( -1 ), Imath::V2f( 1 ) ) );
 
-	return newMesh;
 }
 
 bool meshMightBeTimeVarying( pxr::UsdGeomMesh &mesh )
