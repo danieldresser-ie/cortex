@@ -199,7 +199,7 @@ void VDBObject::render( IECoreScene::Renderer *renderer ) const
 {
 }
 
-IECore::CompoundObjectPtr VDBObject::metadata( const std::string &name )
+IECore::CompoundObjectPtr VDBObject::metadata( const std::string &name ) const
 {
 	CompoundObjectPtr metadata = new CompoundObject();
 
@@ -216,12 +216,7 @@ IECore::CompoundObjectPtr VDBObject::metadata( const std::string &name )
 	}
 	else
 	{
-		openvdb::GridBase::Ptr tmpGrid  = findGrid ( name );
-		if ( tmpGrid )
-		{
-			tmpGrid->addStatsMetadata();
-		}
-		grid = tmpGrid;
+		grid = findGrid ( name );
 	}
 
 	if( !grid )
