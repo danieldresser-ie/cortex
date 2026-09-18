@@ -109,6 +109,13 @@ class KDTree
 		template<typename Box, typename OutputIterator>
 		void enclosedPoints( const Box &bound, OutputIterator it ) const;
 
+		// Finds all the points contained within a set of half-spaces, passing them to the given
+		// functor which must take a PointIterator.
+		// A half-space is specified with an origin and a plane normal ( the normal points towards the region that
+		// is included )
+		template<typename F>
+		void enclosedPoints( const std::vector<Point> &normals, const std::vector<Point> &origins, F &&functor ) const;
+
 		/// Returns the number of nodes in the tree.
 		inline NodeIndex numNodes() const;
 		/// Returns the specified Node of the tree. See rootIndex(), lowChildIndex() and highChildIndex() for
@@ -141,6 +148,11 @@ class KDTree
 
 		template<typename Box, typename OutputIterator>
 		void enclosedPointsWalk( NodeIndex nodeIndex, const Box &bound, OutputIterator it ) const;
+
+		struct HalfSpaceWorkingData;
+
+		template<typename F>
+		void enclosedPointsHalfSpacesWalk( NodeIndex nodeIndex, std::vector<HalfSpaceWorkingData> &working, F &&functor ) const;
 
 		void nearestNNeighboursWalk( NodeIndex nodeIndex, const Point &p, unsigned int numNeighbours, std::vector<Neighbour> &nearNeighbours, BaseType &maxDistSquared ) const;
 

@@ -33,9 +33,11 @@
 //////////////////////////////////////////////////////////////////////////
 
 #include "IECore/BoxOps.h"
+#include "IECore/Exception.h"
 #include "IECore/VectorOps.h"
 
 #include <algorithm>
+#include "boost/container/small_vector.hpp"
 
 namespace IECore
 {
@@ -106,6 +108,14 @@ class KDTree<PointIterator>::AxisSort
 
 	private :
 		const unsigned int m_axis;
+};
+
+template<class PointIterator>
+struct KDTree<PointIterator>::HalfSpaceWorkingData
+{
+	Point normal;
+	Point currentInnermost;
+	BaseType threshold;
 };
 
 // initialisation
@@ -233,6 +243,28 @@ template<typename Box, typename OutputIterator>
 void KDTree<PointIterator>::enclosedPoints( const Box &bound, OutputIterator it ) const
 {
 	enclosedPointsWalk( rootIndex(), bound, it );
+}
+
+template<class PointIterator>
+template<typename F>
+void KDTree<PointIterator>::enclosedPoints(
+	const std::vector<Point> &normals, const std::vector<Point> &origins, F &&functor
+) const
+{
+	std::vector<HalfSpaceWorkingData> workingData;
+	if( normals.size() != origins.size() )
+	{
+		throw IECore::Exception( "Mismatched normals and origins passed to enclosedPoints" );
+	}
+	workingData.resize( normals.size() );
+	for( size_t i = 0; i < normals.size(); i++ )
+	{
+		workingData[i].normal = normals[i];
+		workingData[i].threshold = normals[i].dot( origins[i] );
+		workingData[i].currentInnermost = Point( std::numeric_limits<BaseType>::max() );
+	}
+
+	enclosedPointsHalfSpacesWalk( rootIndex(), workingData, functor );
 }
 
 template<class PointIterator>
@@ -424,6 +456,92 @@ void KDTree<PointIterator>::enclosedPointsWalk( NodeIndex nodeIndex, const Box &
 		if( vecGet( BoxTraits<Box>::max( bound ), node.cutAxis() ) >= node.cutValue() )
 		{
 			enclosedPointsWalk( highChildIndex( nodeIndex ), bound, it );
+		}
+	}
+}
+
+template<class PointIterator>
+template<typename F>
+void KDTree<PointIterator>::enclosedPointsHalfSpacesWalk( NodeIndex nodeIndex, std::vector<HalfSpaceWorkingData> &working, F &&functor ) const
+{
+	// TODO - normalize somewhere before this?
+	const Node &node = m_nodes[nodeIndex];
+
+	if( node.isLeaf() )
+	{
+		PointIterator *permLast = node.permLast();
+		for( PointIterator *perm = node.permFirst(); perm!=permLast; perm++ )
+		{
+			const Point &pp = **perm;
+			bool reject = false;
+			for( HalfSpaceWorkingData &halfSpace : working )
+			{
+				reject |= pp.dot( halfSpace.normal ) < halfSpace.threshold;
+			}
+
+			if( !reject )
+			{
+				functor( *perm );
+			}
+		}
+	}
+	else
+	{
+		unsigned char cutAxis = node.cutAxis();
+		BaseType cutValue = node.cutValue();
+
+		boost::container::small_vector<BaseType, 6> restoreInnermost;
+		restoreInnermost.reserve( working.size() );
+
+		for( HalfSpaceWorkingData &halfSpace : working )
+		{
+			restoreInnermost.push_back( halfSpace.currentInnermost[ cutAxis ] );
+		}
+
+		bool rejectLow = false;
+		for( HalfSpaceWorkingData &halfSpace : working )
+		{
+			if( halfSpace.normal[ cutAxis ] > BaseType( 0 ) )
+			{
+				halfSpace.currentInnermost[ cutAxis ] = halfSpace.normal[ cutAxis ] * cutValue;
+				if( vecSumElements( halfSpace.currentInnermost ) < halfSpace.threshold )
+				{
+					rejectLow = true;
+				}
+			}
+		}
+
+		if( !rejectLow )
+		{
+			enclosedPointsHalfSpacesWalk( lowChildIndex( nodeIndex ), working, functor );
+		}
+
+		bool rejectHigh = false;
+		for( size_t i = 0; i < working.size(); i++ )
+		{
+			HalfSpaceWorkingData &halfSpace = working[i];
+			if( halfSpace.normal[ cutAxis ] < BaseType( 0 ) )
+			{
+				halfSpace.currentInnermost[ cutAxis ] = halfSpace.normal[ cutAxis ] * cutValue;
+				if( vecSumElements( halfSpace.currentInnermost ) < halfSpace.threshold )
+				{
+					rejectHigh = true;
+				}
+			}
+			else
+			{
+				halfSpace.currentInnermost[ cutAxis ] = restoreInnermost[i];
+			}
+		}
+
+		if( !rejectHigh )
+		{
+			enclosedPointsHalfSpacesWalk( highChildIndex( nodeIndex ), working, functor );
+		}
+
+		for( size_t i = 0; i < working.size(); i++ )
+		{
+			working[i].currentInnermost[ cutAxis ] = restoreInnermost[i];
 		}
 	}
 }

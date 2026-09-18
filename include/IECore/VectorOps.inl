@@ -262,6 +262,21 @@ inline T vecCross( const T &v1, const T &v2 )
 
 }
 
+template<typename T>
+inline typename VectorTraits<T>::BaseType vecSumElements( const T &v )
+{
+	// TODO - the conventions for VectorTraits for 1 dimensional vectors are weird ...
+	// maybe instead of worrying about that, maybe I should just make this private?
+	if constexpr( T::dimensions() == 2 )
+	{
+		return v[0] + v[1];
+	}
+	else if constexpr( T::dimensions() == 3 )
+	{
+		return v[0] + v[1] + v[2];
+	}
+}
+
 } // namespace IECore
 
 
