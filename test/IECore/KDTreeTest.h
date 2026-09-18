@@ -65,6 +65,7 @@ class KDTreeTest
 		void testNearestNeighbour();
 		void testNearestNeighbours();
 		void testNearestNNeighbours();
+		void testEnclosedPointsHalfSpaces();
 
 	private:
 
@@ -135,6 +136,10 @@ struct KDTreeTestSuite : public boost::unit_test::test_suite
 		add( test );
 
 		test = BOOST_CLASS_TEST_CASE( &KDTreeTest<T>::testNearestNNeighbours, instance );
+		test->p_name.set( test->p_name.get() + nameSuffix );
+		add( test );
+
+		test = BOOST_CLASS_TEST_CASE( &KDTreeTest<T>::testEnclosedPointsHalfSpaces, instance );
 		test->p_name.set( test->p_name.get() + nameSuffix );
 		add( test );
 	}
