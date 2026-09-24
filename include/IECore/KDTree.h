@@ -40,6 +40,7 @@
 
 IECORE_PUSH_DEFAULT_VISIBILITY
 #include "Imath/ImathVec.h"
+#include "Imath/ImathBox.h"
 IECORE_POP_DEFAULT_VISIBILITY
 
 #include <set>
@@ -139,8 +140,17 @@ class KDTree
 
 		class AxisSort;
 
+		// -- Utilities used when building the tree	--
+
+		// Compute min/max of a list of points
+		Imath::Box<Point> bound( PermutationConstIterator permFirst, PermutationConstIterator permLast );
+		// Return which axis of the bounding box is largest
 		unsigned char majorAxis( PermutationConstIterator permFirst, PermutationConstIterator permLast );
+		// Recursively build the tree
 		void build( NodeIndex nodeIndex, PermutationIterator permFirst, PermutationIterator permLast );
+
+
+		// -- Walk functions that implement the recursive searches --
 
 		void nearestNeighbourWalk( NodeIndex nodeIndex, const Point &p, PointIterator &closestPoint, BaseType &distSquared ) const;
 

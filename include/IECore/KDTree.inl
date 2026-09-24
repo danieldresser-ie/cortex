@@ -132,7 +132,7 @@ KDTree<PointIterator>::KDTree( PointIterator first, PointIterator last, int maxL
 }
 
 template<class PointIterator>
-void KDTree<PointIterator>::init( PointIterator first, PointIterator last, int maxLeafSize  )
+void KDTree<PointIterator>::init( PointIterator first, PointIterator last, int maxLeafSize )
 {
 	m_maxLeafSize = maxLeafSize;
 	m_lastPoint = last;
@@ -145,32 +145,59 @@ void KDTree<PointIterator>::init( PointIterator first, PointIterator last, int m
 
 	/// \todo Can we reserve() enough space for m_nodes before doing this?
 	build( rootIndex(), m_perm.begin(), m_perm.end() );
+
+	// The cut planes we store only limit the size of each Node within the interior of the KDTree.
+	// If we need accurate sizes for Nodes on the exterior of the tree ( rather than treating them as
+	// infinite ), we need to include the bound as well ( this can be particularly important when the
+	// data is an axis-aligned plane, where every node on the "exterior" in the Z axis ).
+	Imath::Box<Point> totalBound = bound( m_perm.begin(), m_perm.end() );
+
+	// \todo : This bound should be stored as an m_bound member variable, but that requires waiting for
+	// a major version, so we need to stash it somewhere else for now. Since the tree has now been fully
+	// built, and ends with leaf nodes that will stop further traversal, no one will notice if we stick
+	// some dummy nodes on the end of the list to store this bound.
+
+	m_nodes.reserve( m_nodes.size() + VectorTraits<Point>::dimensions() * 2 );
+
+	for( unsigned char i=0; i<VectorTraits<Point>::dimensions(); i++ )
+	{
+		m_nodes.push_back( Node() );
+		m_nodes.back().m_cutValue = totalBound.min[i];
+		m_nodes.push_back( Node() );
+		m_nodes.back().m_cutValue = totalBound.max[i];
+	}
 }
 
 template<class PointIterator>
-unsigned char KDTree<PointIterator>::majorAxis( PermutationConstIterator permFirst, PermutationConstIterator permLast )
+Imath::Box<typename KDTree<PointIterator>::Point> KDTree<PointIterator>::bound( PermutationConstIterator permFirst, PermutationConstIterator permLast )
 {
-	Point min, max;
+	Imath::Box<Point> result;
 	for( unsigned char i=0; i<VectorTraits<Point>::dimensions(); i++ ) {
-		min[i] = std::numeric_limits<BaseType>::max();
-		max[i] = std::numeric_limits<BaseType>::lowest();
+		result.min[i] = std::numeric_limits<BaseType>::max();
+		result.max[i] = std::numeric_limits<BaseType>::lowest();
 	}
 	for( PermutationConstIterator it=permFirst; it!=permLast; it++ )
 	{
 		for( unsigned char i=0; i<VectorTraits<Point>::dimensions(); i++ )
 		{
-			if( (**it)[i] < min[i] )
+			if( (**it)[i] < result.min[i] )
 			{
-				min[i] = (**it)[i];
+				result.min[i] = (**it)[i];
 			}
-			if( (**it)[i] > max[i] )
+			if( (**it)[i] > result.max[i] )
 			{
-				max[i] = (**it)[i];
+				result.max[i] = (**it)[i];
 			}
 		}
 	}
+	return result;
+}
+
+template<class PointIterator>
+unsigned char KDTree<PointIterator>::majorAxis( PermutationConstIterator permFirst, PermutationConstIterator permLast )
+{
 	unsigned char major = 0;
-	Point size = max - min;
+	Point size = bound( permFirst, permLast ).size();
 	for( unsigned char i=1; i<VectorTraits<Point>::dimensions(); i++ )
 	{
 		if( size[i] > size[major] )
@@ -193,7 +220,7 @@ void KDTree<PointIterator>::build( NodeIndex nodeIndex, PermutationIterator perm
 	if( permLast - permFirst > m_maxLeafSize )
 	{
 		unsigned int cutAxis = majorAxis( permFirst, permLast );
-		PermutationIterator permMid = permFirst  + (permLast - permFirst)/2;
+		PermutationIterator permMid = permFirst + (permLast - permFirst)/2;
 		std::nth_element( permFirst, permMid, permLast, AxisSort( cutAxis ) );
 		BaseType cutValue = (**permMid)[cutAxis];
 		// insert node
@@ -256,12 +283,30 @@ void KDTree<PointIterator>::enclosedPoints(
 	{
 		throw IECore::Exception( "Mismatched normals and origins passed to enclosedPoints" );
 	}
+
+	// \todo : We should be accessing this bound from an m_bound member variable, but since
+	// we can't add a member variable yet, we're awkwardly pulling this data from some dummy
+	// nodes stuck to the end of the node list.
+	size_t dummyNodesStartOffset = m_nodes.size() - VectorTraits<Point>::dimensions() * 2;
+	Imath::Box<Point> totalBound;
+
+	for( unsigned char i=0; i<VectorTraits<Point>::dimensions(); i++ )
+	{
+		totalBound.min[i] = m_nodes[dummyNodesStartOffset + 2 * i ].m_cutValue;
+		totalBound.max[i] = m_nodes[dummyNodesStartOffset + 2 * i + 1 ].m_cutValue;
+	}
+
 	workingData.resize( normals.size() );
 	for( size_t i = 0; i < normals.size(); i++ )
 	{
 		workingData[i].normal = normals[i];
 		workingData[i].threshold = normals[i].dot( origins[i] );
-		workingData[i].currentInnermost = Point( std::numeric_limits<BaseType>::max() );
+
+		
+		for( unsigned char j=0; j<VectorTraits<Point>::dimensions(); j++ )
+		{
+			workingData[i].currentInnermost[j] = std::max( normals[i][j] * totalBound.min[j], normals[i][j] * totalBound.max[j] );
+		}
 	}
 
 	enclosedPointsHalfSpacesWalk( rootIndex(), workingData, functor );
