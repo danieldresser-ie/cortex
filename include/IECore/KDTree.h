@@ -108,8 +108,6 @@ class KDTree
 		/// The functor must take a PointIterator.
 		template<typename F>
 		void nearestNeighbours( const Point &p, BaseType r, F &&functor ) const;
-		/// \deprecated - use the form above that takes a functor, rather than this version that populates a vector.
-		unsigned int nearestNeighbours( const Point &p, BaseType r, std::vector<PointIterator> &nearNeighbours ) const;
 
 		class Neighbour;
 		/// Populates the passed vector with the N closest neighbours to p, sorted with the closest first. Returns the number found.
@@ -119,12 +117,8 @@ class KDTree
 		/// Finds all the points contained by the specified bound, outputting them to the specified functor,
 		/// which must take a PointIterator.
 		/// \threading May be called by multiple concurrent threads.
-		template<typename Box, typename F, std::enable_if_t< !Detail::IsIterator<F>::value, bool > = true>
+		template<typename Box, typename F>
 		void enclosedPoints( const Box &bound, F &&functor ) const;
-		/// \deprecated - use the form above that takes a functor ( once we get rid of this deprecated signature,
-		/// we can get rid of the ugly enable_if guard above ).
-		template<typename Box, typename OutputIterator, std::enable_if_t< Detail::IsIterator<OutputIterator>::value, bool > = true>
-		void enclosedPoints( const Box &bound, OutputIterator it ) const;
 
 		// Finds all the points contained within a set of half-spaces, passing them to the given
 		// functor which must take a PointIterator.
