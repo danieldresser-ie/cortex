@@ -187,6 +187,7 @@ class KDTree
 		NodeVector m_nodes;
 		int m_maxLeafSize;
 		PointIterator m_lastPoint;
+		Imath::Box< Point > m_bound;
 
 };
 

@@ -150,22 +150,7 @@ void KDTree<PointIterator>::init( PointIterator first, PointIterator last, int m
 	// If we need accurate sizes for Nodes on the exterior of the tree ( rather than treating them as
 	// infinite ), we need to include the bound as well ( this can be particularly important when the
 	// data is an axis-aligned plane, where every node on the "exterior" in the Z axis ).
-	Imath::Box<Point> totalBound = bound( m_perm.begin(), m_perm.end() );
-
-	// \todo : This bound should be stored as an m_bound member variable, but that requires waiting for
-	// a major version, so we need to stash it somewhere else for now. Since the tree has now been fully
-	// built, and ends with leaf nodes that will stop further traversal, no one will notice if we stick
-	// some dummy nodes on the end of the list to store this bound.
-
-	m_nodes.reserve( m_nodes.size() + VectorTraits<Point>::dimensions() * 2 );
-
-	for( unsigned char i=0; i<VectorTraits<Point>::dimensions(); i++ )
-	{
-		m_nodes.push_back( Node() );
-		m_nodes.back().m_cutValue = totalBound.min[i];
-		m_nodes.push_back( Node() );
-		m_nodes.back().m_cutValue = totalBound.max[i];
-	}
+	m_bound = bound( m_perm.begin(), m_perm.end() );
 }
 
 template<class PointIterator>
@@ -299,18 +284,6 @@ void KDTree<PointIterator>::enclosedPoints(
 		throw IECore::Exception( "Mismatched normals and origins passed to enclosedPoints" );
 	}
 
-	// \todo : We should be accessing this bound from an m_bound member variable, but since
-	// we can't add a member variable yet, we're awkwardly pulling this data from some dummy
-	// nodes stuck to the end of the node list.
-	size_t dummyNodesStartOffset = m_nodes.size() - VectorTraits<Point>::dimensions() * 2;
-	Imath::Box<Point> totalBound;
-
-	for( unsigned char i=0; i<VectorTraits<Point>::dimensions(); i++ )
-	{
-		totalBound.min[i] = m_nodes[dummyNodesStartOffset + 2 * i ].m_cutValue;
-		totalBound.max[i] = m_nodes[dummyNodesStartOffset + 2 * i + 1 ].m_cutValue;
-	}
-
 	workingData.resize( normals.size() );
 	for( size_t i = 0; i < normals.size(); i++ )
 	{
@@ -320,7 +293,7 @@ void KDTree<PointIterator>::enclosedPoints(
 		
 		for( unsigned char j=0; j<VectorTraits<Point>::dimensions(); j++ )
 		{
-			workingData[i].currentInnermost[j] = std::max( normals[i][j] * totalBound.min[j], normals[i][j] * totalBound.max[j] );
+			workingData[i].currentInnermost[j] = std::max( normals[i][j] * m_bound.min[j], normals[i][j] * m_bound.max[j] );
 		}
 	}
 
