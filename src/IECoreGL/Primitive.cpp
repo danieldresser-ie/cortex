@@ -190,8 +190,34 @@ void Primitive::render( State *state ) const
 		return;
 	}
 
+	bool drawWireframe = state->get<Primitive::DrawWireframe>()->value();
+	float wireframeWidth = 0.0f;
+	if( drawWireframe )
+	{
+		 wireframeWidth = state->get<Primitive::WireframeWidth>()->value();
+	}
+	else
+	{
+		// \todo - having default padding doesn't seem reasonable, but this is
+		// sufficient to currently make selection look good in Gaffer. The reasonable
+		// way I can think of setting this would be if we added a flag like
+		// DrawWireframe that was instead PlaceholderWireframe, which would just add
+		// padding in order to be compatible with wireframe drawing, but not actually
+		// draw the wireframe.
+		//
+		// Is needing to set PlaceholderWireframe when needed too much of a burden on
+		// clients?
+		wireframeWidth = 1.0f;
+	}
+
 	/// \todo Really we want to remove use of this deprecated push/pop functionality.
 	PushAttrib attributeBlock( GL_DEPTH_BUFFER_BIT | GL_POLYGON_BIT | GL_LINE_BIT | GL_POINT_BIT );
+
+	if( wireframeWidth != 0.0f )
+	{
+		glEnable( GL_POLYGON_OFFSET_FILL );
+		glPolygonOffset( 1 * wireframeWidth, 1 );
+	}
 
 	// if we're in GL_SELECT render mode then just render solid
 	// with a simple shader and early out.
@@ -246,7 +272,6 @@ void Primitive::render( State *state ) const
 	//////////////////////////////////////////////////
 
 	bool drawOutline = state->get<Primitive::DrawOutline>()->value();
-	bool drawWireframe = state->get<Primitive::DrawWireframe>()->value();
 	bool drawPoints = state->get<Primitive::DrawPoints>()->value();
 	bool drawBound = state->get<Primitive::DrawBound>()->value();
 	if( !(drawOutline || drawWireframe || drawPoints || drawBound) )
