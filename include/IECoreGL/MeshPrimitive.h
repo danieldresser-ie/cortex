@@ -38,10 +38,13 @@
 #include "IECoreGL/Export.h"
 #include "IECoreGL/Primitive.h"
 
+#include "IECoreScene/MeshPrimitive.h"
+
 #include "IECore/VectorTypedData.h"
 
 namespace IECoreGL
 {
+
 
 /// \todo Fast drawing, uvs etc. Consider using NVIDIA tristrip library? something else? GLU?
 class IECOREGL_API MeshPrimitive : public Primitive
@@ -51,13 +54,19 @@ class IECOREGL_API MeshPrimitive : public Primitive
 
 		IE_CORE_DECLARERUNTIMETYPEDEXTENSION( IECoreGL::MeshPrimitive, MeshPrimitiveTypeId, Primitive );
 
+		MeshPrimitive( IECoreScene::ConstMeshPrimitivePtr mesh );
+
+		// \todo : Deprecated currently, but seems to be used by something, so I've made a dummy
+		// version. To actually roll this out, we might need to support this
 		MeshPrimitive( unsigned numTriangles );
+
 		~MeshPrimitive() override;
 
 		Imath::Box3f bound() const override;
 
 		void addPrimitiveVariable( const std::string &name, const IECoreScene::PrimitiveVariable &primVar ) override;
 
+		void render( const State *currentState, IECore::TypeId style ) const override;
 		void renderInstances( size_t numInstances = 1 ) const override;
 
 	private :

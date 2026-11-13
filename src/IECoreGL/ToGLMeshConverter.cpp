@@ -34,6 +34,7 @@
 
 #include "IECoreGL/ToGLMeshConverter.h"
 
+#include "IECoreGL/CachedConverter.h"
 #include "IECoreGL/MeshPrimitive.h"
 
 #include "IECoreScene/FaceVaryingPromotionOp.h"
@@ -44,6 +45,7 @@
 #include "IECore/DespatchTypedData.h"
 #include "IECore/MessageHandler.h"
 #include "IECore/SimpleTypedData.h"
+#include "IECore/TypedData.h"
 
 #include <cassert>
 
@@ -65,7 +67,9 @@ ToGLMeshConverter::~ToGLMeshConverter()
 
 IECore::RunTimeTypedPtr ToGLMeshConverter::doConversion( IECore::ConstObjectPtr src, IECore::ConstCompoundObjectPtr operands ) const
 {
-	IECoreScene::MeshPrimitivePtr mesh = boost::static_pointer_cast<IECoreScene::MeshPrimitive>( src->copy() ); // safe because the parameter validated it for us
+	// safe because the parameter validated it for us
+	IECoreScene::ConstMeshPrimitivePtr mesh = boost::static_pointer_cast<const IECoreScene::MeshPrimitive>( src );
+	IECoreScene::MeshPrimitivePtr meshAllocated;
 
 	if( !mesh->variableData<IECore::V3fVectorData>( "P", IECoreScene::PrimitiveVariable::Vertex ) )
 	{
@@ -77,8 +81,15 @@ IECore::RunTimeTypedPtr ToGLMeshConverter::doConversion( IECore::ConstObjectPtr 
 		// the mesh has no normals - we need to explicitly add some. if it's a polygon
 		// mesh (interpolation==linear) then we add per-face normals for a faceted look
 		// and if it's a subdivision mesh we add smooth per-vertex normals.
+
+		if( !meshAllocated )
+		{
+			meshAllocated = mesh->copy();
+			mesh = meshAllocated;
+		}
+
 		IECoreScene::MeshNormalsOpPtr normalOp = new IECoreScene::MeshNormalsOp();
-		normalOp->inputParameter()->setValue( mesh );
+		normalOp->inputParameter()->setValue( meshAllocated );
 		normalOp->copyParameter()->setTypedValue( false );
 		normalOp->interpolationParameter()->setNumericValue(
 			mesh->interpolation() == "linear" ? IECoreScene::PrimitiveVariable::Uniform : IECoreScene::PrimitiveVariable::Vertex
@@ -86,16 +97,36 @@ IECore::RunTimeTypedPtr ToGLMeshConverter::doConversion( IECore::ConstObjectPtr 
 		normalOp->operate();
 	}
 
-	mesh = IECoreScene::MeshAlgo::triangulate( mesh.get() );
+	IECoreScene::PrimitiveVariable::Interpolation targetInterpolation = IECoreScene::PrimitiveVariable::Vertex;
+	for( auto i : mesh->variables )
+	{
+		if( !(
+			i.second.interpolation == IECoreScene::PrimitiveVariable::Vertex ||
+			i.second.interpolation == IECoreScene::PrimitiveVariable::Varying ||
+			i.second.interpolation == IECoreScene::PrimitiveVariable::Constant
+		) )
+		{
+			targetInterpolation = IECoreScene::PrimitiveVariable::FaceVarying;
+		}
+	}
 
-	IECoreScene::FaceVaryingPromotionOpPtr faceVaryingOp = new IECoreScene::FaceVaryingPromotionOp;
-	faceVaryingOp->inputParameter()->setValue( mesh );
-	faceVaryingOp->copyParameter()->setTypedValue( false );
-	faceVaryingOp->operate();
+	if( targetInterpolation == IECoreScene::PrimitiveVariable::FaceVarying )
+	{
+		if( !meshAllocated )
+		{
+			meshAllocated = mesh->copy();
+			mesh = meshAllocated;
+		}
 
-	MeshPrimitivePtr glMesh = new MeshPrimitive( mesh->numFaces() );
+		IECoreScene::FaceVaryingPromotionOpPtr faceVaryingOp = new IECoreScene::FaceVaryingPromotionOp;
+		faceVaryingOp->inputParameter()->setValue( meshAllocated );
+		faceVaryingOp->copyParameter()->setTypedValue( false );
+		faceVaryingOp->operate();
+	}
 
-	for ( IECoreScene::PrimitiveVariableMap::iterator pIt = mesh->variables.begin(); pIt != mesh->variables.end(); ++pIt )
+	MeshPrimitivePtr glMesh = new MeshPrimitive( mesh );
+
+	for ( IECoreScene::PrimitiveVariableMap::const_iterator pIt = mesh->variables.begin(); pIt != mesh->variables.end(); ++pIt )
 	{
 		if( pIt->second.data )
 		{

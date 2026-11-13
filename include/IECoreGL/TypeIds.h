@@ -123,6 +123,8 @@ enum TypeId
 	PrimitiveSelectableTypeId = 105080,
 	ToGLStateConverterTypeId = 105081,
 	ToGLSphereConverterTypeId = 105082,
+	ToGLMeshTopologyConverterTypeId = 105083,
+	MeshTopologyInputWrapperTypeId = 105084,
 	LastCoreGLTypeId = 105999,
 };
 
