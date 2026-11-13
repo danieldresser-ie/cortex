@@ -95,6 +95,7 @@ class IECOREGL_API Buffer : public IECore::RunTimeTyped
 	private :
 
 		GLuint m_buffer;
+		mutable size_t m_size;
 
 };
 

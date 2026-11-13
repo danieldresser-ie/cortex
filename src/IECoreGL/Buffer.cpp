@@ -78,7 +78,7 @@ Buffer::ScopedBinding::~ScopedBinding()
 IE_CORE_DEFINERUNTIMETYPED( Buffer )
 
 Buffer::Buffer( GLuint buffer )
-	:	m_buffer( buffer )
+	:	m_buffer( buffer ), m_size( std::numeric_limits<size_t>::max() )
 {
 }
 
@@ -87,6 +87,7 @@ Buffer::Buffer( const void *data, size_t sizeInBytes, GLenum target, GLenum usag
 	glGenBuffers( 1, &m_buffer );
 	ScopedBinding binding( *this, target );
 	glBufferData( target, sizeInBytes, data, usage );
+	m_size = sizeInBytes;
 }
 
 Buffer::~Buffer()
@@ -101,9 +102,14 @@ GLuint Buffer::buffer() const
 
 size_t Buffer::size() const
 {
-	ScopedBinding binding( *this, GL_ARRAY_BUFFER );
-	int result = 0;
-	glGetBufferParameteriv( GL_ARRAY_BUFFER, GL_BUFFER_SIZE, &result );
-	return result;
+	if( m_size == std::numeric_limits<size_t>::max() )
+	{
+		ScopedBinding binding( *this, GL_ARRAY_BUFFER );
+		int result = 0;
+		glGetBufferParameteriv( GL_ARRAY_BUFFER, GL_BUFFER_SIZE, &result );
+		m_size = result;
+	}
+
+	return m_size;
 }
 
